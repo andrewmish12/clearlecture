@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ClearLecture</title>
+<meta name="description" content="Live lecture captions with tap-to-replay audio for your earbuds.">
+<style>
+  :root {
+    --bg: #f7f6f3; --panel: #ffffff; --text: #1d1d1f; --muted: #6b6b70;
+    --border: #e2e0da; --accent: #2457d6; --accent-text: #ffffff;
+    --danger: #c4342d; --hl: #fff1a8; --hl-text: #1d1d1f; --low: #b35c00;
+    --cap-size: 22px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121214; --panel: #1c1c1f; --text: #f2f2f4; --muted: #9a9aa2;
+      --border: #2e2e33; --accent: #6b93ff; --accent-text: #0b0b0d;
+      --danger: #ff6b63; --hl: #5a4b00; --hl-text: #fff6c8; --low: #ffb35c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121214; --panel: #1c1c1f; --text: #f2f2f4; --muted: #9a9aa2;
+    --border: #2e2e33; --accent: #6b93ff; --accent-text: #0b0b0d;
+    --danger: #ff6b63; --hl: #5a4b00; --hl-text: #fff6c8; --low: #ffb35c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--panel);
+  }
+  h1 { font-size: 18px; margin: 0; letter-spacing: -0.01em; }
+  #status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: #2fbf5b; animation: pulse 1.4s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  #banner { display: none; margin: 12px 16px 0; padding: 10px 12px; border-radius: 10px;
+    background: color-mix(in srgb, var(--danger) 14%, var(--panel)); color: var(--text); font-size: 14px; }
+
+  main { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 900px; width: 100%; margin: 0 auto; }
+  #captions {
+    flex: 1; min-height: 0; overflow-y: auto; padding: 16px;
+    font-size: var(--cap-size); line-height: 1.5;
+  }
+  .empty { color: var(--muted); font-size: 16px; text-align: center; margin-top: 15vh; padding: 0 16px; }
+  .line {
+    padding: 8px 10px; margin: 0 -10px 4px; border-radius: 10px; cursor: pointer;
+    transition: background .15s;
+  }
+  .line:hover, .line:focus-visible { background: color-mix(in srgb, var(--accent) 10%, transparent); outline: none; }
+  .line.speaking { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+  .line time { font-size: 12px; color: var(--muted); display: block; font-variant-numeric: tabular-nums; }
+  .line.low .txt { text-decoration: underline dotted var(--low); text-underline-offset: 4px; }
+  mark { background: var(--hl); color: var(--hl-text); border-radius: 4px; padding: 0 3px; }
+  #interim { color: var(--muted); font-style: italic; padding: 4px 0; min-height: 1.5em; }
+
+  .bar {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border); background: var(--panel);
+  }
+  button, select, input[type=range] { font: inherit; }
+  button {
+    border: 1px solid var(--border); background: var(--panel); color: var(--text);
+    padding: 10px 14px; border-radius: 10px; cursor: pointer; min-height: 44px;
+  }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: transparent; font-weight: 600; min-width: 120px; }
+  button.primary.stop { background: var(--danger); }
+  .toggle { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); margin-left: auto; }
+  .toggle input { width: 18px; height: 18px; }
+
+  details { border-top: 1px solid var(--border); background: var(--panel); }
+  summary { padding: 12px 16px; cursor: pointer; font-size: 14px; color: var(--muted); }
+  .settings { padding: 0 16px 16px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .field small { color: var(--muted); font-size: 12px; }
+  select, textarea {
+    width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); font: inherit; font-size: 14px;
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  .meter { height: 10px; border-radius: 5px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
+  .meter > div { height: 100%; width: 0%; background: #2fbf5b; transition: width .08s; }
+  #devices { font-size: 12px; color: var(--muted); margin: 0; padding-left: 18px; }
+  .wide { grid-column: 1 / -1; }
+  @media (max-width: 520px) {
+    .toggle { margin-left: 0; width: 100%; }
+    button.primary { flex: 1; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>ClearLecture</h1>
+  <div id="status"><span class="dot" id="dot"></span><span id="statusText">Not listening</span></div>
+</header>
+<div id="banner"></div>
+
+<main>
+  <div id="captions" aria-live="polite">
+    <div class="empty" id="empty">Press <b>Start</b> and allow microphone access.<br>Tap any line to hear it again in your earbuds.</div>
+    <div id="lines"></div>
+    <div id="interim"></div>
+  </div>
+</main>
+
+<div class="bar">
+  <button class="primary" id="startBtn">Start</button>
+  <button id="replayBtn" disabled>Replay last</button>
+  <button id="downloadBtn" disabled>Download</button>
+  <button id="clearBtn" disabled>Clear</button>
+  <label class="toggle"><input type="checkbox" id="autoSpeak"> Speak every line</label>
+</div>
+
+<details>
+  <summary>Settings &amp; course vocabulary</summary>
+  <div class="settings">
+    <div class="field">
+      <label for="lang">Speaker's English accent</label>
+      <select id="lang">
+        <option value="en-US">English (US)</option>
+        <option value="en-GB">English (UK)</option>
+        <option value="en-IN">English (India)</option>
+        <option value="en-AU">English (Australia)</option>
+        <option value="en-CA">English (Canada)</option>
+        <option value="en-IE">English (Ireland)</option>
+        <option value="en-NZ">English (New Zealand)</option>
+        <option value="en-ZA">English (South Africa)</option>
+        <option value="en-NG">English (Nigeria)</option>
+        <option value="en-KE">English (Kenya)</option>
+        <option value="en-PH">English (Philippines)</option>
+        <option value="en-SG">English (Singapore)</option>
+      </select>
+      <small>Picking the closest regional English can improve accuracy. Try a couple and compare.</small>
+    </div>
+    <div class="field">
+      <label for="voice">Replay voice</label>
+      <select id="voice"></select>
+    </div>
+    <div class="field">
+      <label for="rate">Replay speed: <span id="rateVal">1.0×</span></label>
+      <input type="range" id="rate" min="0.6" max="1.6" step="0.1" value="1">
+    </div>
+    <div class="field">
+      <label for="size">Caption size: <span id="sizeVal">22px</span></label>
+      <input type="range" id="size" min="16" max="40" step="2" value="22">
+    </div>
+    <div class="field wide">
+      <label for="vocab">Course vocabulary (one per line or comma-separated)</label>
+      <textarea id="vocab" placeholder="eigenvalue, Krebs cycle, mitochondria, Schrödinger"></textarea>
+      <small>These terms get highlighted in captions so they're easy to spot. The free browser engine can't use them to improve recognition.</small>
+    </div>
+    <div class="field wide">
+      <label>Microphone check</label>
+      <div class="meter"><div id="meterFill"></div></div>
+      <button id="micCheckBtn" type="button">Check mic level</button>
+      <ul id="devices"></ul>
+      <small>The browser listens on your system's default input. To use a different mic or a disability-office receiver, set it as the default input in your computer's or phone's sound settings.</small>
+    </div>
+  </div>
+</details>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const synth = window.speechSynthesis;
+
+  const linesEl = $('lines'), interimEl = $('interim'), captionsEl = $('captions');
+  const startBtn = $('startBtn'), replayBtn = $('replayBtn'), downloadBtn = $('downloadBtn'), clearBtn = $('clearBtn');
+  const autoSpeak = $('autoSpeak'), langSel = $('lang'), voiceSel = $('voice');
+  const rateEl = $('rate'), sizeEl = $('size'), vocabEl = $('vocab');
+
+  const lines = [];           // { time: Date, text: string, conf: number }
+  let rec = null, listening = false, wakeLock = null, stickToBottom = true;
+
+  // ---------- Support check ----------
+  function showBanner(msg) { const b = $('banner'); b.innerHTML = msg; b.style.display = 'block'; }
+  if (!SR) {
+    showBanner('This browser doesn’t support live speech recognition. Use <b>Chrome</b>, <b>Edge</b>, or <b>Safari</b>.');
+    startBtn.disabled = true;
+  }
+  if (location.protocol === 'file:') {
+    showBanner('Opened as a local file. Microphone access may be blocked. Host this page on an <b>https://</b> address (e.g. GitHub Pages) for reliable use.');
+  }
+
+  // ---------- Status ----------
+  function setStatus(text, on) { $('statusText').textContent = text; $('dot').classList.toggle('on', !!on); }
+
+  // ---------- Vocabulary highlighting ----------
+  const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  function vocabRegex() {
+    const terms = vocabEl.value.split(/[\n,]/).map(t => t.trim()).filter(Boolean)
+      .sort((a, b) => b.length - a.length).map(reEsc);
+    return terms.length ? new RegExp('\\b(' + terms.join('|') + ')\\b', 'gi') : null;
+  }
+  function renderText(text, re) {
+    const safe = esc(text);
+    return re ? safe.replace(re, '<mark>$1</mark>') : safe;
+  }
+
+  // ---------- Captions ----------
+  const fmtTime = d => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  function lineEl(entry, idx, re) {
+    const div = document.createElement('div');
+    div.className = 'line' + (entry.conf > 0 && entry.conf < 0.6 ? ' low' : '');
+    div.tabIndex = 0;
+    div.dataset.idx = idx;
+    div.title = 'Tap to replay';
+    div.innerHTML = `<time>${fmtTime(entry.time)}</time><span class="txt">${renderText(entry.text, re)}</span>`;
+    return div;
+  }
+
+  function rerenderAll() {
+    const re = vocabRegex();
+    linesEl.innerHTML = '';
+    lines.forEach((l, i) => linesEl.appendChild(lineEl(l, i, re)));
+  }
+
+  function addLine(text, conf) {
+    if (!text) return;
+    const entry = { time: new Date(), text: text.charAt(0).toUpperCase() + text.slice(1), conf: conf || 0 };
+    lines.push(entry);
+    linesEl.appendChild(lineEl(entry, lines.length - 1, vocabRegex()));
+    $('empty').style.display = 'none';
+    [replayBtn, downloadBtn, clearBtn].forEach(b => b.disabled = false);
+    if (autoSpeak.checked) speak(lines.length - 1, false);
+    scrollDown();
+  }
+
+  function scrollDown() { if (stickToBottom) captionsEl.scrollTop = captionsEl.scrollHeight; }
+  captionsEl.addEventListener('scroll', () => {
+    stickToBottom = captionsEl.scrollHeight - captionsEl.scrollTop - captionsEl.clientHeight < 60;
+  });
+
+  linesEl.addEventListener('click', e => {
+    const el = e.target.closest('.line'); if (el) speak(+el.dataset.idx, true);
+  });
+  linesEl.addEventListener('keydown', e => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('line')) {
+      e.preventDefault(); speak(+e.target.dataset.idx, true);
+    }
+  });
+
+  // ---------- Speech synthesis (replay) ----------
+  let voices = [];
+  function loadVoices() {
+    if (!synth) return;
+    voices = synth.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+    const prev = voiceSel.value;
+    voiceSel.innerHTML = '';
+    voices.forEach((v, i) => {
+      const o = document.createElement('option');
+      o.value = i; o.textContent = `${v.name} (${v.lang})`;
+      voiceSel.appendChild(o);
+    });
+    if (!voices.length) voiceSel.innerHTML = '<option value="">System default</option>';
+    if (prev && voiceSel.querySelector(`option[value="${prev}"]`)) voiceSel.value = prev;
+    else {
+      const pref = voices.findIndex(v => /samantha|google us english|aria|jenny|natural/i.test(v.name));
+      if (pref >= 0) voiceSel.value = pref;
+    }
+  }
+  if (synth) { loadVoices(); synth.onvoiceschanged = loadVoices; }
+
+  function speak(idx, interrupt) {
+    if (!synth || !lines[idx]) return;
+    if (interrupt) synth.cancel();
+    const u = new SpeechSynthesisUtterance(lines[idx].text);
+    const v = voices[+voiceSel.value]; if (v) u.voice = v;
+    u.rate = +rateEl.value;
+    const el = linesEl.querySelector(`[data-idx="${idx}"]`);
+    u.onstart = () => el && el.classList.add('speaking');
+    u.onend = u.onerror = () => el && el.classList.remove('speaking');
+    synth.speak(u);
+  }
+
+  replayBtn.onclick = () => speak(lines.length - 1, true);
+
+  // ---------- Speech recognition ----------
+  function startRecognition() {
+    rec = new SR();
+    rec.lang = langSel.value;
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+
+    rec.onstart = () => setStatus('Listening', true);
+    rec.onresult = e => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) addLine(r[0].transcript.trim(), r[0].confidence);
+        else interim += r[0].transcript;
+      }
+      interimEl.textContent = interim;
+      scrollDown();
+    };
+    rec.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        listening = false;
+        showBanner('Microphone access was blocked. Allow the mic for this site in your browser settings, then press Start again.');
+        updateStartBtn();
+      } else if (e.error === 'network') {
+        setStatus('Network issue, retrying…', false);
+      } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        setStatus('Error: ' + e.error, false);
+      }
+    };
+    rec.onend = () => {
+      interimEl.textContent = '';
+      // Browsers stop recognition after silence or ~1 min; restart automatically.
+      if (listening) setTimeout(() => { try { rec.start(); } catch (_) {} }, 300);
+      else setStatus('Not listening', false);
+    };
+    rec.start();
+  }
+
+  async function requestWakeLock() {
+    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && listening) requestWakeLock();
+    if (document.visibilityState === 'hidden' && listening) setStatus('Paused (app in background)', false);
+  });
+
+  function updateStartBtn() {
+    startBtn.textContent = listening ? 'Stop' : 'Start';
+    startBtn.classList.toggle('stop', listening);
+    langSel.disabled = listening;
+  }
+
+  startBtn.onclick = () => {
+    if (!SR) return;
+    if (listening) {
+      listening = false;
+      try { rec && rec.stop(); } catch (_) {}
+      if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+    } else {
+      stopMeter();
+      listening = true;
+      $('banner').style.display = 'none';
+      startRecognition();
+      requestWakeLock();
+    }
+    updateStartBtn();
+  };
+
+  // ---------- Transcript download / clear ----------
+  downloadBtn.onclick = () => {
+    const d = new Date();
+    const header = `Lecture transcript, ${d.toLocaleDateString()}\n\n`;
+    const body = lines.map(l => `[${fmtTime(l.time)}] ${l.text}`).join('\n');
+    const blob = new Blob([header + body + '\n'], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `lecture-${d.toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  clearBtn.onclick = () => {
+    if (!confirm('Clear all captions? Download first if you want to keep them.')) return;
+    lines.length = 0; linesEl.innerHTML = ''; $('empty').style.display = '';
+    [replayBtn, downloadBtn, clearBtn].forEach(b => b.disabled = true);
+  };
+
+  // ---------- Settings ----------
+  rateEl.oninput = () => $('rateVal').textContent = (+rateEl.value).toFixed(1) + '×';
+  sizeEl.oninput = () => {
+    document.documentElement.style.setProperty('--cap-size', sizeEl.value + 'px');
+    $('sizeVal').textContent = sizeEl.value + 'px';
+  };
+  let vocabTimer;
+  vocabEl.oninput = () => { clearTimeout(vocabTimer); vocabTimer = setTimeout(rerenderAll, 250); };
+
+  // ---------- Mic level check ----------
+  let meterStream = null, meterCtx = null, meterRaf = null;
+  function stopMeter() {
+    if (meterRaf) cancelAnimationFrame(meterRaf);
+    if (meterStream) meterStream.getTracks().forEach(t => t.stop());
+    if (meterCtx) meterCtx.close().catch(() => {});
+    meterStream = meterCtx = meterRaf = null;
+    $('meterFill').style.width = '0%';
+    $('micCheckBtn').textContent = 'Check mic level';
+  }
+  $('micCheckBtn').onclick = async () => {
+    if (meterStream) return stopMeter();
+    if (listening) { alert('Stop listening first, then check the mic.'); return; }
+    try {
+      meterStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      meterCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = meterCtx.createMediaStreamSource(meterStream);
+      const an = meterCtx.createAnalyser(); an.fftSize = 1024; src.connect(an);
+      const buf = new Float32Array(an.fftSize);
+      const tick = () => {
+        an.getFloatTimeDomainData(buf);
+        let sum = 0; for (const x of buf) sum += x * x;
+        const rms = Math.sqrt(sum / buf.length);
+        $('meterFill').style.width = Math.min(100, rms * 400) + '%';
+        meterRaf = requestAnimationFrame(tick);
+      };
+      tick();
+      $('micCheckBtn').textContent = 'Stop mic check';
+      const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput');
+      const active = meterStream.getAudioTracks()[0]?.label;
+      $('devices').innerHTML = devs.map(d =>
+        `<li>${esc(d.label || 'Microphone')}${d.label === active ? ' ← in use' : ''}</li>`).join('');
+    } catch (err) {
+      stopMeter();
+      showBanner('Couldn’t open the microphone: ' + esc(err.message || String(err)));
+    }
+  };
+})();
+</script>
+</body>
+</html>
