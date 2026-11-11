@@ -35,8 +35,6 @@
     font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex; flex-direction: column;
   }
-
-  /* Header */
   header {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 10px 16px; padding-top: calc(10px + env(safe-area-inset-top));
@@ -61,12 +59,11 @@
 
   #banner { display: none; margin: 12px 16px 0; padding: 10px 12px; border-radius: 10px;
     background: color-mix(in srgb, var(--danger) 14%, var(--panel)); font-size: 14px; }
+  #banner.info { background: color-mix(in srgb, var(--teal) 14%, var(--panel)); }
 
-  /* Captions */
   main { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 860px; width: 100%; margin: 0 auto; }
   #captions { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 16px 8px; font-size: var(--cap-size); line-height: 1.45; }
-  .empty { text-align: center; margin: 12vh auto 0; max-width: 420px; color: var(--muted); font-size: 16px; }
-  .empty svg { width: 72px; height: 72px; margin-bottom: 14px; }
+  .empty { text-align: center; margin: 10vh auto 0; max-width: 440px; color: var(--muted); font-size: 16px; }
   .empty h2 { color: var(--text); font-size: 22px; margin: 0 0 6px; }
   .empty ol { text-align: left; display: inline-block; margin: 14px 0 0; padding-left: 20px; }
   .empty li { margin: 4px 0; }
@@ -85,11 +82,7 @@
   mark { background: var(--hl); color: var(--hl-text); border-radius: 5px; padding: 0 4px; }
   #interim { color: var(--muted); font-style: italic; padding: 4px 0 12px; min-height: 1.5em; }
 
-  /* Control bar */
-  .bar {
-    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-    padding: 12px 16px; border-top: 1px solid var(--border); background: var(--panel);
-  }
+  .bar { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--panel); }
   .bar-inner { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; width: 100%; max-width: 860px; margin: 0 auto; }
   button, select { font: inherit; }
   button {
@@ -102,17 +95,16 @@
     min-width: 128px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   }
   button.primary.stop { background: var(--danger); color: #fff; }
-  .accent {
+  .pick {
     display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 12px;
     padding: 0 4px 0 12px; min-height: 46px; background: var(--btn); font-size: 13px; color: var(--muted);
   }
-  .accent select { border: 0; background: transparent; color: var(--btn-text); font-size: 15px; font-weight: 600; padding: 8px 4px; cursor: pointer; }
-  .accent select:disabled { opacity: .6; }
+  .pick select { border: 0; background: transparent; color: var(--btn-text); font-size: 15px; font-weight: 600; padding: 8px 4px; cursor: pointer; }
+  .pick select:disabled { opacity: .6; }
   .spacer { flex: 1; }
   .toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); cursor: pointer; }
   .toggle input { width: 18px; height: 18px; accent-color: var(--teal); }
 
-  /* Settings */
   details { background: var(--panel); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); }
   summary { padding: 12px 16px; cursor: pointer; font-size: 14px; color: var(--muted); max-width: 860px; margin: 0 auto; }
   .settings { padding: 0 16px 16px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); max-width: 860px; margin: 0 auto; }
@@ -128,12 +120,14 @@
   .meter > div { height: 100%; width: 0%; background: var(--teal); transition: width .08s; }
   #devices { font-size: 12px; color: var(--muted); margin: 0; padding-left: 18px; }
   .wide { grid-column: 1 / -1; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
 
   @media (max-width: 560px) {
     .brand h1 { font-size: 17px; }
     #captions { font-size: calc(var(--cap-size) - 2px); }
-    button.primary { flex: 1; }
-    .accent { flex: 1; }
+    button.primary { flex: 1 1 100%; }
+    .pick { flex: 1; }
     .spacer { display: none; }
     .toggle { width: 100%; }
   }
@@ -161,11 +155,12 @@
   <div id="captions" aria-live="polite">
     <div class="empty" id="empty">
       <h2>Ready when your lecture is</h2>
-      <div>Live captions, plus tap-to-replay in your AirPods.</div>
+      <div>Live captions, plus replay in your AirPods.</div>
       <ol>
-        <li>Pick your professor's <b>accent</b> below</li>
+        <li>Pick an <b>engine</b>. <b>Accurate</b> is best on a laptop.</li>
+        <li>On Fast, pick your professor's <b>accent</b></li>
         <li>Press <b>Start</b> and allow the mic</li>
-        <li>Tap any line to hear it again</li>
+        <li>Tap any line to hear it, or turn on <b>Read aloud live</b></li>
       </ol>
     </div>
     <div id="lines"></div>
@@ -176,7 +171,13 @@
 <div class="bar">
   <div class="bar-inner">
     <button class="primary" id="startBtn">Start</button>
-    <label class="accent" for="lang">Accent
+    <label class="pick" for="engine">Engine
+      <select id="engine">
+        <option value="browser">Fast</option>
+        <option value="whisper">Accurate</option>
+      </select>
+    </label>
+    <label class="pick" for="lang" id="accentPick">Accent
       <select id="lang">
         <option value="en-US">US</option>
         <option value="en-GB">UK</option>
@@ -194,30 +195,38 @@
     </label>
     <button id="replayBtn" disabled>Replay last</button>
     <div class="spacer"></div>
-    <label class="toggle"><input type="checkbox" id="autoSpeak"> Speak every line</label>
+    <label class="toggle"><input type="checkbox" id="autoSpeak"> Read aloud live</label>
   </div>
 </div>
 
 <details>
-  <summary>Settings, vocabulary &amp; transcript</summary>
+  <summary>Settings, voice, vocabulary &amp; transcript</summary>
   <div class="settings">
     <div class="field">
-      <label for="voice">Replay voice</label>
+      <label for="voice">Voice</label>
       <select id="voice"></select>
+      <button id="testVoiceBtn" type="button">Test voice</button>
+      <small>Best voices are listed first. For a much more natural voice: on Mac go to System Settings → Accessibility → Spoken Content → System voice → Manage Voices and download an <b>Enhanced</b> or <b>Premium</b> English voice. On iPhone: Settings → Accessibility → Spoken Content → Voices. Then reload this page.</small>
     </div>
     <div class="field">
-      <label for="rate">Replay speed: <span id="rateVal">1.0×</span></label>
-      <input type="range" id="rate" min="0.6" max="1.6" step="0.1" value="1">
-    </div>
-    <div class="field">
-      <label for="size">Caption size: <span id="sizeVal">26px</span></label>
+      <label for="rate">Voice speed: <span id="rateVal">0.9×</span></label>
+      <input type="range" id="rate" min="0.6" max="1.4" step="0.05" value="0.9">
+      <label for="size" style="margin-top:10px">Caption size: <span id="sizeVal">26px</span></label>
       <input type="range" id="size" min="16" max="44" step="2" value="26">
     </div>
     <div class="field">
+      <label for="wModel">Accurate engine model</label>
+      <select id="wModel">
+        <option value="Xenova/whisper-base.en">Base (faster, smaller download)</option>
+        <option value="Xenova/whisper-small.en">Small (most accurate, bigger download)</option>
+      </select>
+      <small>Runs free on your own device. The first start downloads the model, then it's saved for next time. Best in Chrome or Edge on a laptop. Captions arrive every few seconds.</small>
+    </div>
+    <div class="field">
       <label>Transcript</label>
-      <div style="display:flex; gap:8px;">
-        <button id="downloadBtn" disabled style="flex:1">Download</button>
-        <button id="clearBtn" disabled style="flex:1">Clear</button>
+      <div class="row">
+        <button id="downloadBtn" disabled>Download</button>
+        <button id="clearBtn" disabled>Clear</button>
       </div>
     </div>
     <div class="field wide">
@@ -230,7 +239,7 @@
       <div class="meter"><div id="meterFill"></div></div>
       <button id="micCheckBtn" type="button">Check mic level</button>
       <ul id="devices"></ul>
-      <small>The browser listens on your system's default input. To use a different mic or a disability-office receiver, set it as the default input in your sound settings.</small>
+      <small>Uses your system's default input. To use a different mic or a disability-office receiver, set it as the default input in your sound settings. With Read aloud live on, use earbuds, not speakers, so the mic doesn't hear the voice.</small>
     </div>
   </div>
 </details>
@@ -240,36 +249,52 @@
   const $ = id => document.getElementById(id);
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const synth = window.speechSynthesis;
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   const linesEl = $('lines'), interimEl = $('interim'), captionsEl = $('captions');
   const startBtn = $('startBtn'), replayBtn = $('replayBtn'), downloadBtn = $('downloadBtn'), clearBtn = $('clearBtn');
-  const autoSpeak = $('autoSpeak'), langSel = $('lang'), voiceSel = $('voice');
-  const rateEl = $('rate'), sizeEl = $('size'), vocabEl = $('vocab');
+  const autoSpeak = $('autoSpeak'), langSel = $('lang'), engineSel = $('engine'), voiceSel = $('voice');
+  const rateEl = $('rate'), sizeEl = $('size'), vocabEl = $('vocab'), wModelSel = $('wModel');
 
   const lines = [];
-  let rec = null, listening = false, wakeLock = null, stickToBottom = true;
+  let listening = false, wakeLock = null, stickToBottom = true;
 
-  // Remember accent via the URL (#accent=en-IN), so a bookmark keeps it.
-  const hashAccent = new URLSearchParams(location.hash.slice(1)).get('accent');
-  if (hashAccent && langSel.querySelector(`option[value="${hashAccent}"]`)) langSel.value = hashAccent;
-  langSel.onchange = () => { history.replaceState(null, '', '#accent=' + langSel.value); };
+  // ---------- Settings saved in the URL (bookmarkable) ----------
+  const params = new URLSearchParams(location.hash.slice(1));
+  const setIf = (sel, v) => { if (v && sel.querySelector(`option[value="${v}"]`)) sel.value = v; };
+  setIf(langSel, params.get('accent'));
+  setIf(engineSel, params.get('engine'));
+  setIf(wModelSel, params.get('model'));
+  if (params.get('live') === '1') autoSpeak.checked = true;
+  function saveHash() {
+    const p = new URLSearchParams({ engine: engineSel.value, accent: langSel.value });
+    if (engineSel.value === 'whisper') p.set('model', wModelSel.value);
+    if (autoSpeak.checked) p.set('live', '1');
+    history.replaceState(null, '', '#' + p.toString());
+  }
+  function syncEngineUI() {
+    $('accentPick').style.display = engineSel.value === 'browser' ? '' : 'none';
+    if (engineSel.value === 'whisper' && isIOS) {
+      showBanner('Heads up: the Accurate engine is heavy and may be slow or crash on iPhone. It works best on a laptop.', true);
+    } else if (engineSel.value === 'browser' && !SR) {
+      showBanner('This browser doesn’t support the Fast engine. Use Chrome, Edge, or Safari, or switch to Accurate.');
+    } else hideBanner();
+  }
+  [langSel, engineSel, wModelSel].forEach(s => s.addEventListener('change', () => { saveHash(); syncEngineUI(); }));
+  autoSpeak.addEventListener('change', () => { saveHash(); if (!autoSpeak.checked) clearAutoQueue(); });
 
-  function showBanner(msg) { const b = $('banner'); b.innerHTML = msg; b.style.display = 'block'; }
-  if (!SR) {
-    showBanner('This browser doesn’t support live speech recognition. Use <b>Chrome</b>, <b>Edge</b>, or <b>Safari</b>.');
-    startBtn.disabled = true;
-  }
-  if (location.protocol === 'file:') {
-    showBanner('Opened as a local file. Microphone access may be blocked. Use the https:// link instead.');
-  }
+  function showBanner(msg, info) { const b = $('banner'); b.innerHTML = msg; b.className = info ? 'info' : ''; b.style.display = 'block'; }
+  function hideBanner() { $('banner').style.display = 'none'; }
+  if (location.protocol === 'file:') showBanner('Opened as a local file. Microphone access may be blocked. Use the https:// link instead.');
+  syncEngineUI();
 
   function setStatus(text, on) { $('statusText').textContent = text; $('status').classList.toggle('on', !!on); }
 
+  // ---------- Captions ----------
   const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   function vocabRegex() {
-    const terms = vocabEl.value.split(/[\n,]/).map(t => t.trim()).filter(Boolean)
-      .sort((a, b) => b.length - a.length).map(reEsc);
+    const terms = vocabEl.value.split(/[\n,]/).map(t => t.trim()).filter(Boolean).sort((a, b) => b.length - a.length).map(reEsc);
     return terms.length ? new RegExp('\\b(' + terms.join('|') + ')\\b', 'gi') : null;
   }
   const renderText = (text, re) => { const s = esc(text); return re ? s.replace(re, '<mark>$1</mark>') : s; };
@@ -278,149 +303,317 @@
   function lineEl(entry, idx, re) {
     const div = document.createElement('div');
     div.className = 'line' + (entry.conf > 0 && entry.conf < 0.6 ? ' low' : '');
-    div.tabIndex = 0;
-    div.dataset.idx = idx;
-    div.title = 'Tap to replay';
+    div.tabIndex = 0; div.dataset.idx = idx; div.title = 'Tap to replay';
     div.innerHTML = `<time>${fmtTime(entry.time)}</time><span class="txt">${renderText(entry.text, re)}</span><span class="play">▶ Replay</span>`;
     return div;
   }
-  function rerenderAll() {
-    const re = vocabRegex();
-    linesEl.innerHTML = '';
-    lines.forEach((l, i) => linesEl.appendChild(lineEl(l, i, re)));
-  }
+  function rerenderAll() { const re = vocabRegex(); linesEl.innerHTML = ''; lines.forEach((l, i) => linesEl.appendChild(lineEl(l, i, re))); }
   function addLine(text, conf) {
+    text = (text || '').trim();
     if (!text) return;
     const entry = { time: new Date(), text: text.charAt(0).toUpperCase() + text.slice(1), conf: conf || 0 };
     lines.push(entry);
     linesEl.appendChild(lineEl(entry, lines.length - 1, vocabRegex()));
     $('empty').style.display = 'none';
     [replayBtn, downloadBtn, clearBtn].forEach(b => b.disabled = false);
-    if (autoSpeak.checked) speak(lines.length - 1, false);
+    if (autoSpeak.checked) enqueueAuto(lines.length - 1);
     scrollDown();
   }
   function scrollDown() { if (stickToBottom) captionsEl.scrollTop = captionsEl.scrollHeight; }
-  captionsEl.addEventListener('scroll', () => {
-    stickToBottom = captionsEl.scrollHeight - captionsEl.scrollTop - captionsEl.clientHeight < 60;
-  });
-  linesEl.addEventListener('click', e => { const el = e.target.closest('.line'); if (el) speak(+el.dataset.idx, true); });
+  captionsEl.addEventListener('scroll', () => { stickToBottom = captionsEl.scrollHeight - captionsEl.scrollTop - captionsEl.clientHeight < 60; });
+  linesEl.addEventListener('click', e => { const el = e.target.closest('.line'); if (el) speakNow(+el.dataset.idx); });
   linesEl.addEventListener('keydown', e => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('line')) { e.preventDefault(); speak(+e.target.dataset.idx, true); }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('line')) { e.preventDefault(); speakNow(+e.target.dataset.idx); }
   });
 
-  // Speech synthesis
+  // ---------- Voice: pick the most natural installed voice ----------
+  const NOVELTY = /albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|junior|ralph|fred|kathy|grandma|grandpa|rocko|shelley|eddy|flo|reed|sandy/i;
+  function voiceScore(v) {
+    let s = 0; const n = v.name;
+    if (/premium/i.test(n)) s += 8;
+    if (/enhanced/i.test(n)) s += 6;
+    if (/natural|neural|online/i.test(n)) s += 7;   // Edge "Online (Natural)" voices
+    if (/siri/i.test(n)) s += 5;
+    if (/google/i.test(n)) s += 4;
+    if (/samantha|ava|zoe|evan|nathan|allison|susan|tom|karen|daniel|serena|moira|rishi|aria|jenny|guy/i.test(n)) s += 1;
+    if (/en[-_]US/i.test(v.lang)) s += 1;
+    return s;
+  }
   let voices = [];
   function loadVoices() {
     if (!synth) return;
-    voices = synth.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
-    const prev = voiceSel.value;
+    const prevName = voices[+voiceSel.value]?.name;
+    voices = synth.getVoices()
+      .filter(v => v.lang && /^en/i.test(v.lang) && !NOVELTY.test(v.name))
+      .sort((a, b) => voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name));
     voiceSel.innerHTML = '';
-    voices.forEach((v, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${v.name} (${v.lang})`; voiceSel.appendChild(o); });
+    voices.forEach((v, i) => {
+      const o = document.createElement('option');
+      o.value = i; o.textContent = (i === 0 ? '★ ' : '') + `${v.name} (${v.lang})`;
+      voiceSel.appendChild(o);
+    });
     if (!voices.length) voiceSel.innerHTML = '<option value="">System default</option>';
-    if (prev && voiceSel.querySelector(`option[value="${prev}"]`)) voiceSel.value = prev;
-    else { const pref = voices.findIndex(v => /samantha|google us english|aria|jenny|natural/i.test(v.name)); if (pref >= 0) voiceSel.value = pref; }
+    const keep = voices.findIndex(v => v.name === prevName);
+    voiceSel.value = keep >= 0 ? keep : 0;
   }
   if (synth) { loadVoices(); synth.onvoiceschanged = loadVoices; }
 
-  function speak(idx, interrupt) {
-    if (!synth || !lines[idx]) return;
-    if (interrupt) synth.cancel();
-    const u = new SpeechSynthesisUtterance(lines[idx].text);
-    const v = voices[+voiceSel.value]; if (v) u.voice = v;
-    u.rate = +rateEl.value;
+  // Add end punctuation so the voice drops its pitch at the end instead of running on.
+  const forSpeech = t => /[.!?]$/.test(t) ? t : t + '.';
+
+  let sayToken = 0, saying = false;
+  const autoQueue = [];
+  function utter(idx, done) {
+    const myToken = ++sayToken;
+    const u = new SpeechSynthesisUtterance(forSpeech(lines[idx].text));
+    const v = voices[+voiceSel.value]; if (v) { u.voice = v; u.lang = v.lang; }
+    u.rate = +rateEl.value; u.pitch = 1;
     const el = linesEl.querySelector(`[data-idx="${idx}"]`);
+    const words = lines[idx].text.split(/\s+/).length;
+    let finished = false;
+    const finish = () => {
+      if (finished) return; finished = true;
+      el && el.classList.remove('speaking');
+      if (myToken === sayToken) done && done();
+    };
+    // Safety net: some browsers never fire onend.
+    const guard = setTimeout(finish, (words / (2.6 * u.rate)) * 1000 + 4000);
     u.onstart = () => el && el.classList.add('speaking');
-    u.onend = u.onerror = () => el && el.classList.remove('speaking');
+    u.onend = u.onerror = () => { clearTimeout(guard); finish(); };
     synth.speak(u);
   }
-  replayBtn.onclick = () => speak(lines.length - 1, true);
+  function speakNow(idx) {
+    if (!synth || !lines[idx]) return;
+    autoQueue.length = 0; sayToken++; synth.cancel();
+    saying = true;
+    utter(idx, () => { saying = false; pump(); });
+  }
+  // Read aloud live: if it falls behind, skip to the newest line so it never lags far behind.
+  function enqueueAuto(idx) {
+    autoQueue.push(idx);
+    if (autoQueue.length > 1) autoQueue.splice(0, autoQueue.length - 1);
+    pump();
+  }
+  function pump() {
+    if (saying || !autoQueue.length || !synth) return;
+    const idx = autoQueue.shift();
+    saying = true;
+    utter(idx, () => { saying = false; pump(); });
+  }
+  function clearAutoQueue() { autoQueue.length = 0; }
+  replayBtn.onclick = () => speakNow(lines.length - 1);
+  $('testVoiceBtn').onclick = () => {
+    if (!synth) return;
+    sayToken++; synth.cancel(); saying = false;
+    const u = new SpeechSynthesisUtterance('Hi. This is how your replays will sound. You can change the voice and speed here.');
+    const v = voices[+voiceSel.value]; if (v) { u.voice = v; u.lang = v.lang; }
+    u.rate = +rateEl.value; synth.speak(u);
+  };
 
-  // Speech recognition
-  function startRecognition() {
+  // ---------- Engine 1: browser speech recognition (Fast) ----------
+  let rec = null;
+  function startBrowser() {
+    if (!SR) { showBanner('This browser doesn’t support the Fast engine. Switch to Accurate.'); return false; }
     rec = new SR();
-    rec.lang = langSel.value;
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.maxAlternatives = 1;
+    rec.lang = langSel.value; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
     rec.onstart = () => setStatus('Listening', true);
     rec.onresult = e => {
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
-        if (r.isFinal) addLine(r[0].transcript.trim(), r[0].confidence);
-        else interim += r[0].transcript;
+        if (r.isFinal) addLine(r[0].transcript, r[0].confidence); else interim += r[0].transcript;
       }
-      interimEl.textContent = interim;
-      scrollDown();
+      interimEl.textContent = interim; scrollDown();
     };
     rec.onerror = e => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        listening = false;
-        showBanner('Microphone access was blocked. Allow the mic for this site in your browser settings, then press Start again.');
-        updateStartBtn();
+        stopAll(); showBanner('Microphone access was blocked. Allow the mic for this site in your browser settings, then press Start again.');
       } else if (e.error === 'network') setStatus('Reconnecting…', false);
       else if (e.error !== 'no-speech' && e.error !== 'aborted') setStatus('Error: ' + e.error, false);
     };
     rec.onend = () => {
       interimEl.textContent = '';
-      if (listening) setTimeout(() => { try { rec.start(); } catch (_) {} }, 300);
-      else setStatus('Not listening', false);
+      if (listening && engineSel.value === 'browser') setTimeout(() => { try { rec.start(); } catch (_) {} }, 300);
     };
     rec.start();
+    return true;
+  }
+  function stopBrowser() { try { rec && rec.stop(); } catch (_) {} rec = null; }
+
+  // ---------- Engine 2: Whisper running on-device (Accurate) ----------
+  const TJS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2';
+  let asr = null, asrModel = null;
+  async function loadWhisper() {
+    const model = wModelSel.value;
+    if (asr && asrModel === model) return asr;
+    setStatus('Loading model…', false);
+    const T = await import(TJS);
+    T.env.allowLocalModels = false;
+    const files = {};
+    const progress = p => {
+      if (p.status === 'progress' && p.file && p.total) {
+        files[p.file] = [p.loaded, p.total];
+        let l = 0, t = 0; for (const k in files) { l += files[k][0]; t += files[k][1]; }
+        setStatus(`Downloading model ${Math.round(l / t * 100)}%`, false);
+      }
+    };
+    let pipe = null;
+    if (navigator.gpu) {
+      try { pipe = await T.pipeline('automatic-speech-recognition', model, { device: 'webgpu', dtype: 'fp32', progress_callback: progress }); }
+      catch (e) { console.warn('WebGPU failed, falling back to WASM', e); }
+    }
+    if (!pipe) pipe = await T.pipeline('automatic-speech-recognition', model, { device: 'wasm', dtype: 'q8', progress_callback: progress });
+    asr = pipe; asrModel = model;
+    return asr;
   }
 
+  let wStream = null, wCtx = null, wNode = null, wSrc = null;
+  let wBuf = [], wLen = 0, silentMs = 0, voiced = false, noiseFloor = 0.004;
+  const pending = []; let busy = false;
+  const SR16 = 16000;
+
+  function downsample(input, from) {
+    if (from === SR16) return new Float32Array(input);
+    const ratio = from / SR16, len = Math.floor(input.length / ratio), out = new Float32Array(len);
+    for (let i = 0; i < len; i++) {
+      const s = Math.floor(i * ratio), e = Math.min(input.length, Math.floor((i + 1) * ratio));
+      let sum = 0; for (let j = s; j < e; j++) sum += input[j];
+      out[i] = sum / Math.max(1, e - s);
+    }
+    return out;
+  }
+  function concat(parts) {
+    const total = parts.reduce((n, p) => n + p.length, 0), out = new Float32Array(total);
+    let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
+    return out;
+  }
+  function flush() {
+    if (!wLen) return;
+    const audio = concat(wBuf); wBuf = []; wLen = 0; silentMs = 0;
+    if (voiced) pending.push(audio);
+    voiced = false;
+    processPending();
+  }
+  // Whisper sometimes invents text on near-silence. Filter the usual suspects.
+  const JUNK = /^(thank you\.?|thanks for watching!?|you\.?|bye\.?|\.+|okay\.?)$/i;
+  function cleanText(t) {
+    t = (t || '').replace(/\[[^\]]*\]|\([^)]*\)|\*[^*]*\*/g, ' ').replace(/\s+/g, ' ').trim();
+    return JUNK.test(t) ? '' : t;
+  }
+  async function processPending() {
+    if (busy || !asr) return;
+    busy = true;
+    while (pending.length) {
+      // If we fell behind, merge the backlog but keep at most the last 30 seconds.
+      let audio = pending.length > 1 ? concat(pending.splice(0)) : pending.shift();
+      if (audio.length > SR16 * 30) audio = audio.slice(audio.length - SR16 * 30);
+      interimEl.textContent = 'Transcribing…';
+      try {
+        const out = await asr(audio, { chunk_length_s: 30, stride_length_s: 5 });
+        const text = cleanText(Array.isArray(out) ? out.map(o => o.text).join(' ') : out.text);
+        if (text) addLine(text, 0);
+      } catch (e) { console.error(e); setStatus('Transcription error', false); }
+      interimEl.textContent = '';
+    }
+    busy = false;
+    if (listening) setStatus('Listening', true);
+  }
+
+  async function startWhisper() {
+    try { await loadWhisper(); }
+    catch (e) {
+      console.error(e);
+      showBanner('Couldn’t load the Accurate engine (' + esc(e.message || String(e)) + '). Try Chrome on a laptop, or switch to Fast.');
+      return false;
+    }
+    if (!listening) return false; // user pressed Stop while loading
+    try {
+      wStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    } catch (e) {
+      showBanner('Microphone access was blocked. Allow the mic for this site in your browser settings, then press Start again.');
+      return false;
+    }
+    wCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const rate = wCtx.sampleRate;
+    wSrc = wCtx.createMediaStreamSource(wStream);
+    wNode = wCtx.createScriptProcessor(4096, 1, 1);
+    wSrc.connect(wNode); wNode.connect(wCtx.destination);
+    wNode.onaudioprocess = e => {
+      const input = e.inputBuffer.getChannelData(0);
+      e.outputBuffer.getChannelData(0).fill(0);
+      let sq = 0; for (let i = 0; i < input.length; i++) sq += input[i] * input[i];
+      const rms = Math.sqrt(sq / input.length);
+      const ms = input.length / rate * 1000;
+      const isSpeech = rms > Math.max(0.006, noiseFloor * 2.5);
+      if (!isSpeech) noiseFloor = noiseFloor * 0.95 + rms * 0.05; // adapt to room noise
+      const chunk = downsample(input, rate);
+      wBuf.push(chunk); wLen += chunk.length;
+      if (isSpeech) { voiced = true; silentMs = 0; } else silentMs += ms;
+      const secs = wLen / SR16;
+      if ((voiced && secs > 2.5 && silentMs > 600) || secs >= 9) flush();
+      else if (!voiced && secs > 3) { wBuf = []; wLen = 0; }
+    };
+    setStatus('Listening', true);
+    return true;
+  }
+  function stopWhisper() {
+    if (wNode) { wNode.onaudioprocess = null; try { wNode.disconnect(); wSrc.disconnect(); } catch (_) {} }
+    if (wStream) wStream.getTracks().forEach(t => t.stop());
+    if (wCtx) wCtx.close().catch(() => {});
+    flush();
+    wNode = wSrc = wStream = wCtx = null;
+  }
+
+  // ---------- Start / stop ----------
   async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {} }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && listening) requestWakeLock();
-    if (document.visibilityState === 'hidden' && listening) setStatus('Paused (app in background)', false);
+    if (document.visibilityState === 'hidden' && listening && engineSel.value === 'browser') setStatus('Paused (app in background)', false);
   });
-
   function updateStartBtn() {
     startBtn.textContent = listening ? 'Stop' : 'Start';
     startBtn.classList.toggle('stop', listening);
-    langSel.disabled = listening;
+    [langSel, engineSel, wModelSel].forEach(s => s.disabled = listening);
   }
-  startBtn.onclick = () => {
-    if (!SR) return;
-    if (listening) {
-      listening = false;
-      try { rec && rec.stop(); } catch (_) {}
-      if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
-    } else {
-      stopMeter();
-      listening = true;
-      $('banner').style.display = 'none';
-      startRecognition();
-      requestWakeLock();
-    }
+  function stopAll() {
+    listening = false;
+    stopBrowser(); stopWhisper();
+    if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+    setStatus('Not listening', false);
     updateStartBtn();
+  }
+  startBtn.onclick = async () => {
+    if (listening) return stopAll();
+    stopMeter(); hideBanner();
+    listening = true; updateStartBtn();
+    const ok = engineSel.value === 'whisper' ? await startWhisper() : startBrowser();
+    if (!ok) stopAll(); else requestWakeLock();
   };
 
-  // Transcript
+  // ---------- Transcript ----------
   downloadBtn.onclick = () => {
     const d = new Date();
-    const header = `Lecture transcript, ${d.toLocaleDateString()}\n\n`;
     const body = lines.map(l => `[${fmtTime(l.time)}] ${l.text}`).join('\n');
-    const blob = new Blob([header + body + '\n'], { type: 'text/plain' });
+    const blob = new Blob([`Lecture transcript, ${d.toLocaleDateString()}\n\n${body}\n`], { type: 'text/plain' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `lecture-${d.toISOString().slice(0, 10)}.txt`;
+    a.href = URL.createObjectURL(blob); a.download = `lecture-${d.toISOString().slice(0, 10)}.txt`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
   clearBtn.onclick = () => {
     if (!confirm('Clear all captions? Download first if you want to keep them.')) return;
     lines.length = 0; linesEl.innerHTML = ''; $('empty').style.display = '';
+    autoQueue.length = 0;
     [replayBtn, downloadBtn, clearBtn].forEach(b => b.disabled = true);
   };
 
-  // Settings
-  rateEl.oninput = () => $('rateVal').textContent = (+rateEl.value).toFixed(1) + '×';
+  // ---------- Settings ----------
+  rateEl.oninput = () => $('rateVal').textContent = (+rateEl.value).toFixed(2).replace(/0$/, '') + '×';
   sizeEl.oninput = () => { document.documentElement.style.setProperty('--cap-size', sizeEl.value + 'px'); $('sizeVal').textContent = sizeEl.value + 'px'; };
   let vocabTimer;
   vocabEl.oninput = () => { clearTimeout(vocabTimer); vocabTimer = setTimeout(rerenderAll, 250); };
 
-  // Mic check
+  // ---------- Mic check ----------
   let meterStream = null, meterCtx = null, meterRaf = null;
   function stopMeter() {
     if (meterRaf) cancelAnimationFrame(meterRaf);
@@ -451,8 +644,7 @@
       const active = meterStream.getAudioTracks()[0]?.label;
       $('devices').innerHTML = devs.map(d => `<li>${esc(d.label || 'Microphone')}${d.label === active ? ' ← in use' : ''}</li>`).join('');
     } catch (err) {
-      stopMeter();
-      showBanner('Couldn’t open the microphone: ' + esc(err.message || String(err)));
+      stopMeter(); showBanner('Couldn’t open the microphone: ' + esc(err.message || String(err)));
     }
   };
 })();
