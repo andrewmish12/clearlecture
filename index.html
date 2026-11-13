@@ -4,49 +4,54 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ClearLecture</title>
-<meta name="description" content="Live lecture captions with tap-to-replay audio for your earbuds.">
+<meta name="description" content="Live lecture captions with replay in your earbuds, saved lectures, and AI study help.">
 <meta name="theme-color" content="#0F2A44">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='96' fill='%230F2A44'/%3E%3Cpath d='M140 55 C 110 30, 60 35, 45 75 C 35 110, 55 150, 95 160 C 115 163, 132 156, 140 145' fill='none' stroke='%2314B8A6' stroke-width='14' stroke-linecap='round'/%3E%3Cg stroke='%23FFFFFF' stroke-width='9' stroke-linecap='round'%3E%3Cline x1='84' y1='128' x2='84' y2='66'/%3E%3Cline x1='97' y1='128' x2='97' y2='112'/%3E%3Cline x1='110' y1='128' x2='110' y2='104'/%3E%3Cline x1='123' y1='128' x2='123' y2='114'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root {
     --navy: #0F2A44; --teal: #14B8A6; --teal-ink: #0B5F57;
-    --bg: #F4F6F8; --panel: #FFFFFF; --text: #102233; --muted: #5E6B78;
-    --old: #7A8794; --border: #DDE3E9;
+    --bg: #F4F6F8; --panel: #FFFFFF; --side: #EAEFF3; --text: #102233; --muted: #5E6B78;
+    --old: #6F7D8A; --border: #DDE3E9;
     --btn: #FFFFFF; --btn-text: #102233;
     --danger: #D64545; --hl: #CCF5EF; --hl-text: #073B36; --low: #C27A00;
-    --cap-size: 26px;
+    --card: #FFFFFF;
+    --cap-size: 24px;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0A1724; --panel: #0F2A44; --text: #EAF2F8; --muted: #93A6B8;
-      --old: #7F94A8; --border: #1E3D5C; --btn: #163654; --btn-text: #EAF2F8;
-      --hl: #0E5149; --hl-text: #D9FFF9; --low: #FFB547; --teal-ink: #5EEAD4;
+      --bg: #0A1724; --panel: #0F2A44; --side: #0C2236; --text: #EAF2F8; --muted: #93A6B8;
+      --old: #8597A8; --border: #1E3D5C; --btn: #163654; --btn-text: #EAF2F8;
+      --hl: #0E5149; --hl-text: #D9FFF9; --low: #FFB547; --teal-ink: #5EEAD4; --card: #11304D;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0A1724; --panel: #0F2A44; --text: #EAF2F8; --muted: #93A6B8;
-    --old: #7F94A8; --border: #1E3D5C; --btn: #163654; --btn-text: #EAF2F8;
-    --hl: #0E5149; --hl-text: #D9FFF9; --low: #FFB547; --teal-ink: #5EEAD4;
+    --bg: #0A1724; --panel: #0F2A44; --side: #0C2236; --text: #EAF2F8; --muted: #93A6B8;
+    --old: #8597A8; --border: #1E3D5C; --btn: #163654; --btn-text: #EAF2F8;
+    --hl: #0E5149; --hl-text: #D9FFF9; --low: #FFB547; --teal-ink: #5EEAD4; --card: #11304D;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
     background: var(--bg); color: var(--text);
     font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    display: flex; flex-direction: column;
+    display: flex; flex-direction: column; overflow: hidden;
   }
+  button, select, input, textarea { font: inherit; }
+
+  /* Header */
   header {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 10px 16px; padding-top: calc(10px + env(safe-area-inset-top));
-    background: var(--navy); color: #fff;
+    background: var(--navy); color: #fff; flex: none;
   }
   .brand { display: flex; align-items: center; gap: 10px; }
-  .brand svg { width: 34px; height: 34px; flex: none; }
-  .brand h1 { font-size: 19px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+  .brand svg { width: 32px; height: 32px; flex: none; }
+  .brand h1 { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
   .brand h1 span { color: var(--teal); }
+  #menuBtn { display: none; background: transparent; border: 0; color: #fff; min-height: 36px; padding: 4px 8px; font-size: 20px; cursor: pointer; }
   .status {
     display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
-    padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.08); color: #C9D6E2;
+    padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.08); color: #C9D6E2; white-space: nowrap;
   }
   .status.on { background: rgba(20,184,166,.18); color: #7FF0E0; }
   .bars { display: flex; align-items: flex-end; gap: 2px; height: 14px; }
@@ -57,86 +62,150 @@
   .status.on .bars i:nth-child(4) { animation-delay: .45s; }
   @keyframes eq { 0%,100% { height: 4px; } 50% { height: 14px; } }
 
+  /* Layout */
+  .app { flex: 1; min-height: 0; display: flex; }
+  aside {
+    width: 270px; flex: none; background: var(--side); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .side-top { padding: 12px; }
+  #newBtn { width: 100%; font-weight: 700; }
+  .side-label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 4px 16px 6px; }
+  #sessList { list-style: none; margin: 0; padding: 0 8px 12px; overflow-y: auto; flex: 1; }
+  #sessList li {
+    padding: 9px 10px; border-radius: 10px; cursor: pointer; margin-bottom: 2px;
+  }
+  #sessList li:hover { background: color-mix(in srgb, var(--teal) 10%, transparent); }
+  #sessList li.active { background: color-mix(in srgb, var(--teal) 20%, transparent); }
+  #sessList .t { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #sessList .d { font-size: 12px; color: var(--muted); }
+  #sessList .live { color: var(--teal-ink); font-weight: 700; }
+  .side-empty { padding: 8px 16px; font-size: 13px; color: var(--muted); }
+  #scrim { display: none; }
+
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
   #banner { display: none; margin: 12px 16px 0; padding: 10px 12px; border-radius: 10px;
     background: color-mix(in srgb, var(--danger) 14%, var(--panel)); font-size: 14px; }
   #banner.info { background: color-mix(in srgb, var(--teal) 14%, var(--panel)); }
 
-  main { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 860px; width: 100%; margin: 0 auto; }
-  #captions { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 16px 8px; font-size: var(--cap-size); line-height: 1.45; }
-  .empty { text-align: center; margin: 10vh auto 0; max-width: 440px; color: var(--muted); font-size: 16px; }
+  .sess-head {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--panel);
+  }
+  #sessTitle {
+    flex: 1 1 200px; min-width: 0; border: 1px solid transparent; background: transparent; color: var(--text);
+    font-size: 17px; font-weight: 700; padding: 6px 8px; border-radius: 8px;
+  }
+  #sessTitle:hover, #sessTitle:focus { border-color: var(--border); background: var(--bg); outline: none; }
+  .sess-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sm { min-height: 38px; padding: 6px 12px; font-size: 14px; border-radius: 10px; }
+  .ai { border-color: color-mix(in srgb, var(--teal) 50%, var(--border)); color: var(--teal-ink); font-weight: 600; }
+  .ghost { background: transparent; border-color: transparent; color: var(--muted); }
+
+  #captions { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 8px; }
+  .inner { max-width: 820px; margin: 0 auto; }
+  .lines { font-size: var(--cap-size); line-height: 1.45; }
+  .empty { text-align: center; margin: 8vh auto 0; max-width: 440px; color: var(--muted); font-size: 16px; }
   .empty h2 { color: var(--text); font-size: 22px; margin: 0 0 6px; }
   .empty ol { text-align: left; display: inline-block; margin: 14px 0 0; padding-left: 20px; }
   .empty li { margin: 4px 0; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--teal);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 15px;
+  }
+  .card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 700; color: var(--teal-ink); }
+  .card h4 { margin: 12px 0 4px; font-size: 15px; }
+  .card ul { margin: 4px 0; padding-left: 20px; }
+  .card p { margin: 6px 0; }
 
   .line {
     position: relative; padding: 8px 12px; margin: 0 -12px 2px; border-radius: 12px;
     cursor: pointer; color: var(--old); transition: background .15s, color .2s;
   }
-  .line:last-child { color: var(--text); font-weight: 500; }
-  .line:hover, .line:focus-visible { background: color-mix(in srgb, var(--teal) 10%, transparent); color: var(--text); outline: none; }
+  .lines.live .line:last-child { color: var(--text); font-weight: 500; }
+  .lines:not(.live) .line { color: var(--text); }
+  .line:hover, .line:focus-visible { background: color-mix(in srgb, var(--teal) 8%, transparent); color: var(--text); outline: none; }
+  .line.selected { background: color-mix(in srgb, var(--teal) 12%, transparent); color: var(--text); }
   .line.speaking { background: color-mix(in srgb, var(--teal) 20%, transparent); color: var(--text); }
-  .line time { font-size: 12px; font-weight: 400; color: var(--muted); display: block; font-variant-numeric: tabular-nums; }
-  .line .play { position: absolute; right: 12px; top: 8px; font-size: 12px; color: var(--teal-ink); opacity: 0; transition: opacity .15s; font-weight: 600; }
-  .line:hover .play, .line:focus-visible .play, .line.speaking .play { opacity: 1; }
+  .line time { font-size: 12px; font-weight: 400; color: var(--muted); display: flex; gap: 8px; font-variant-numeric: tabular-nums; }
+  .line .fixed { color: var(--teal-ink); font-weight: 600; }
   .line.low .txt { text-decoration: underline dotted var(--low); text-underline-offset: 5px; }
+  .line .acts { display: none; gap: 6px; margin-top: 6px; }
+  .line.selected .acts { display: flex; }
+  .line .acts button { min-height: 34px; padding: 4px 10px; font-size: 13px; border-radius: 8px; font-weight: 600; }
+  .explain {
+    margin-top: 8px; padding: 8px 12px; border-radius: 10px; font-size: 15px; font-weight: 400; color: var(--text);
+    background: color-mix(in srgb, var(--teal) 10%, var(--panel)); border-left: 3px solid var(--teal);
+  }
   mark { background: var(--hl); color: var(--hl-text); border-radius: 5px; padding: 0 4px; }
-  #interim { color: var(--muted); font-style: italic; padding: 4px 0 12px; min-height: 1.5em; }
+  #interim { color: var(--muted); font-style: italic; padding: 4px 0 12px; min-height: 1.5em; font-size: var(--cap-size); }
 
-  .bar { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--panel); }
-  .bar-inner { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; width: 100%; max-width: 860px; margin: 0 auto; }
-  button, select { font: inherit; }
+  /* Control bar */
+  .bar { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--panel); flex: none; }
+  .bar-inner { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; max-width: 820px; margin: 0 auto; }
   button {
     border: 1px solid var(--border); background: var(--btn); color: var(--btn-text);
     padding: 10px 14px; border-radius: 12px; cursor: pointer; min-height: 46px; font-size: 15px;
   }
-  button:disabled { opacity: .4; cursor: default; }
-  button.primary {
-    background: var(--teal); color: #04302B; border-color: transparent; font-weight: 700;
-    min-width: 128px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: var(--teal); color: #04302B; border-color: transparent; font-weight: 700; min-width: 120px; }
   button.primary.stop { background: var(--danger); color: #fff; }
   .pick {
     display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 12px;
     padding: 0 4px 0 12px; min-height: 46px; background: var(--btn); font-size: 13px; color: var(--muted);
   }
   .pick select { border: 0; background: transparent; color: var(--btn-text); font-size: 15px; font-weight: 600; padding: 8px 4px; cursor: pointer; }
-  .pick select:disabled { opacity: .6; }
   .spacer { flex: 1; }
   .toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); cursor: pointer; }
   .toggle input { width: 18px; height: 18px; accent-color: var(--teal); }
 
-  details { background: var(--panel); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); }
-  summary { padding: 12px 16px; cursor: pointer; font-size: 14px; color: var(--muted); max-width: 860px; margin: 0 auto; }
-  .settings { padding: 0 16px 16px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); max-width: 860px; margin: 0 auto; }
+  /* Settings */
+  details { background: var(--panel); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); flex: none; max-height: 55vh; overflow-y: auto; }
+  summary { padding: 10px 16px; cursor: pointer; font-size: 14px; color: var(--muted); }
+  .settings { padding: 0 16px 16px; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); max-width: 820px; margin: 0 auto; }
   .field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
   .field small { color: var(--muted); font-size: 12px; }
-  .field select, textarea {
+  .field small a { color: var(--teal-ink); }
+  .field select, .field input[type=password], .field input[type=text], textarea {
     width: 100%; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--bg); color: var(--text); font: inherit; font-size: 14px;
+    background: var(--bg); color: var(--text); font-size: 14px;
   }
   input[type=range] { accent-color: var(--teal); }
-  textarea { min-height: 90px; resize: vertical; }
+  textarea { min-height: 80px; resize: vertical; }
   .meter { height: 10px; border-radius: 5px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
   .meter > div { height: 100%; width: 0%; background: var(--teal); transition: width .08s; }
   #devices { font-size: 12px; color: var(--muted); margin: 0; padding-left: 18px; }
   .wide { grid-column: 1 / -1; }
   .row { display: flex; gap: 8px; }
   .row > * { flex: 1; }
+  #aiState { font-weight: 600; }
 
+  @media (max-width: 820px) {
+    #menuBtn { display: block; }
+    aside {
+      position: fixed; z-index: 20; top: 0; bottom: 0; left: 0; width: 82vw; max-width: 300px;
+      transform: translateX(-100%); transition: transform .2s; padding-top: env(safe-area-inset-top);
+    }
+    body.side-open aside { transform: none; }
+    body.side-open #scrim { display: block; position: fixed; inset: 0; z-index: 15; background: rgba(0,0,0,.4); }
+  }
   @media (max-width: 560px) {
-    .brand h1 { font-size: 17px; }
-    #captions { font-size: calc(var(--cap-size) - 2px); }
+    .brand h1 { font-size: 16px; }
+    .status #statusText { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
     button.primary { flex: 1 1 100%; }
     .pick { flex: 1; }
     .spacer { display: none; }
     .toggle { width: 100%; }
+    .sess-actions { width: 100%; }
+    .sess-actions button { flex: 1; }
   }
 </style>
-<meta name="robots" content="noindex, nofollow">
 </head>
 <body>
 <header>
   <div class="brand">
+    <button id="menuBtn" aria-label="Show saved lectures">&#9776;</button>
     <svg viewBox="0 0 200 200" aria-hidden="true">
       <circle cx="100" cy="100" r="96" fill="#0F2A44" stroke="#1E3D5C" stroke-width="4"/>
       <g stroke="#14B8A6" stroke-width="5" stroke-linecap="round">
@@ -150,100 +219,125 @@
   </div>
   <div class="status" id="status"><span class="bars"><i></i><i></i><i></i><i></i></span><span id="statusText">Not listening</span></div>
 </header>
-<div id="banner"></div>
 
-<main>
-  <div id="captions" aria-live="polite">
-    <div class="empty" id="empty">
-      <h2>Ready when your lecture is</h2>
-      <div>Live captions, plus replay in your AirPods.</div>
-      <ol>
-        <li>Pick an <b>engine</b>. <b>Accurate</b> is best on a laptop.</li>
-        <li>On Fast, pick your professor's <b>accent</b></li>
-        <li>Press <b>Start</b> and allow the mic</li>
-        <li>Tap any line to hear it, or turn on <b>Read aloud live</b></li>
-      </ol>
-    </div>
-    <div id="lines"></div>
-    <div id="interim"></div>
-  </div>
-</main>
+<div class="app">
+  <aside id="sidebar">
+    <div class="side-top"><button id="newBtn">+ New lecture</button></div>
+    <div class="side-label">Saved lectures</div>
+    <ul id="sessList"></ul>
+  </aside>
+  <div id="scrim"></div>
 
-<div class="bar">
-  <div class="bar-inner">
-    <button class="primary" id="startBtn">Start</button>
-    <label class="pick" for="engine">Engine
-      <select id="engine">
-        <option value="browser">Fast</option>
-        <option value="whisper">Accurate</option>
-      </select>
-    </label>
-    <label class="pick" for="lang" id="accentPick">Accent
-      <select id="lang">
-        <option value="en-US">US</option>
-        <option value="en-GB">UK</option>
-        <option value="en-IN">India</option>
-        <option value="en-AU">Australia</option>
-        <option value="en-CA">Canada</option>
-        <option value="en-IE">Ireland</option>
-        <option value="en-NZ">New Zealand</option>
-        <option value="en-ZA">South Africa</option>
-        <option value="en-NG">Nigeria</option>
-        <option value="en-KE">Kenya</option>
-        <option value="en-PH">Philippines</option>
-        <option value="en-SG">Singapore</option>
-      </select>
-    </label>
-    <button id="replayBtn" disabled>Replay last</button>
-    <div class="spacer"></div>
-    <label class="toggle"><input type="checkbox" id="autoSpeak"> Read aloud live</label>
-  </div>
-</div>
+  <section class="main">
+    <div id="banner"></div>
 
-<details>
-  <summary>Settings, voice, vocabulary &amp; transcript</summary>
-  <div class="settings">
-    <div class="field">
-      <label for="voice">Voice</label>
-      <select id="voice"></select>
-      <button id="testVoiceBtn" type="button">Test voice</button>
-      <small>Best voices are listed first. For a much more natural voice: on Mac go to System Settings → Accessibility → Spoken Content → System voice → Manage Voices and download an <b>Enhanced</b> or <b>Premium</b> English voice. On iPhone: Settings → Accessibility → Spoken Content → Voices. Then reload this page.</small>
-    </div>
-    <div class="field">
-      <label for="rate">Voice speed: <span id="rateVal">0.9×</span></label>
-      <input type="range" id="rate" min="0.6" max="1.4" step="0.05" value="0.9">
-      <label for="size" style="margin-top:10px">Caption size: <span id="sizeVal">26px</span></label>
-      <input type="range" id="size" min="16" max="44" step="2" value="26">
-    </div>
-    <div class="field">
-      <label for="wModel">Accurate engine model</label>
-      <select id="wModel">
-        <option value="Xenova/whisper-base.en">Base (faster, smaller download)</option>
-        <option value="Xenova/whisper-small.en">Small (most accurate, bigger download)</option>
-      </select>
-      <small>Runs free on your own device. The first start downloads the model, then it's saved for next time. Best in Chrome or Edge on a laptop. Captions arrive every few seconds.</small>
-    </div>
-    <div class="field">
-      <label>Transcript</label>
-      <div class="row">
-        <button id="downloadBtn" disabled>Download</button>
-        <button id="clearBtn" disabled>Clear</button>
+    <div class="sess-head">
+      <input id="sessTitle" aria-label="Lecture name" placeholder="Name this lecture (e.g. BIOL 1020)">
+      <div class="sess-actions">
+        <button class="sm ai" id="sumBtn">&#10024; Summary</button>
+        <button class="sm ai" id="fixBtn">&#10024; Fix errors</button>
+        <button class="sm" id="dlBtn" title="Download as a text file">Download</button>
+        <button class="sm ghost" id="delBtn">Delete</button>
       </div>
     </div>
-    <div class="field wide">
-      <label for="vocab">Course vocabulary (one per line or comma-separated)</label>
-      <textarea id="vocab" placeholder="eigenvalue, Krebs cycle, mitochondria, Schrödinger"></textarea>
-      <small>These terms get highlighted in captions so they're easy to spot.</small>
+
+    <div id="captions" aria-live="polite">
+      <div class="inner">
+        <div id="summaryCard" class="card" style="display:none"></div>
+        <div class="empty" id="empty">
+          <h2>Ready when your lecture is</h2>
+          <div>Live captions, replay in your AirPods, and AI study help.</div>
+          <ol>
+            <li>Pick an <b>engine</b>. <b>Accurate</b> is best on a laptop.</li>
+            <li>On Fast, pick your professor's <b>accent</b></li>
+            <li>Press <b>Start</b> and allow the mic</li>
+            <li>Tap any line to replay it or get it <b>explained</b></li>
+          </ol>
+        </div>
+        <div class="lines" id="lines"></div>
+        <div id="interim"></div>
+      </div>
     </div>
-    <div class="field wide">
-      <label>Microphone check</label>
-      <div class="meter"><div id="meterFill"></div></div>
-      <button id="micCheckBtn" type="button">Check mic level</button>
-      <ul id="devices"></ul>
-      <small>Uses your system's default input. To use a different mic or a disability-office receiver, set it as the default input in your sound settings. With Read aloud live on, use earbuds, not speakers, so the mic doesn't hear the voice.</small>
+
+    <div class="bar">
+      <div class="bar-inner">
+        <button class="primary" id="startBtn">Start</button>
+        <label class="pick" for="engine">Engine
+          <select id="engine">
+            <option value="browser">Fast</option>
+            <option value="whisper">Accurate</option>
+          </select>
+        </label>
+        <label class="pick" for="lang" id="accentPick">Accent
+          <select id="lang">
+            <option value="en-US">US</option>
+            <option value="en-GB">UK</option>
+            <option value="en-IN">India</option>
+            <option value="en-AU">Australia</option>
+            <option value="en-CA">Canada</option>
+            <option value="en-IE">Ireland</option>
+            <option value="en-NZ">New Zealand</option>
+            <option value="en-ZA">South Africa</option>
+            <option value="en-NG">Nigeria</option>
+            <option value="en-KE">Kenya</option>
+            <option value="en-PH">Philippines</option>
+            <option value="en-SG">Singapore</option>
+          </select>
+        </label>
+        <button id="replayBtn" disabled>Replay last</button>
+        <div class="spacer"></div>
+        <label class="toggle"><input type="checkbox" id="autoSpeak"> Read aloud live</label>
+      </div>
     </div>
-  </div>
-</details>
+
+    <details id="settingsPanel">
+      <summary>Settings: AI, voice, vocabulary, mic</summary>
+      <div class="settings">
+        <div class="field wide">
+          <label for="aiKey">AI (free Google Gemini key) &middot; <span id="aiState">Not set up</span></label>
+          <div class="row">
+            <input type="password" id="aiKey" placeholder="Paste your Gemini API key" autocomplete="off" spellcheck="false">
+            <button id="aiSaveBtn" style="flex:0 0 auto">Save</button>
+            <button id="aiRemoveBtn" style="flex:0 0 auto" class="ghost">Remove</button>
+          </div>
+          <small>Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> (sign in with Google, then "Create API key"). Your key stays in this browser and is only sent to Google. Free keys have small daily limits, so AI only runs when you tap it. On the free tier Google may use what you send to improve its products.</small>
+        </div>
+        <div class="field">
+          <label for="voice">Voice</label>
+          <select id="voice"></select>
+          <button id="testVoiceBtn" type="button">Test voice</button>
+          <small>Best voices are listed first. For a more natural voice on Mac: System Settings → Accessibility → Spoken Content → System voice → Manage Voices, and download an <b>Enhanced</b> or <b>Premium</b> English voice. iPhone: Settings → Accessibility → Spoken Content → Voices. Then reload.</small>
+        </div>
+        <div class="field">
+          <label for="rate">Voice speed: <span id="rateVal">0.9×</span></label>
+          <input type="range" id="rate" min="0.6" max="1.4" step="0.05" value="0.9">
+          <label for="size" style="margin-top:10px">Caption size: <span id="sizeVal">24px</span></label>
+          <input type="range" id="size" min="16" max="44" step="2" value="24">
+        </div>
+        <div class="field">
+          <label for="wModel">Accurate engine model</label>
+          <select id="wModel">
+            <option value="Xenova/whisper-base.en">Base (faster, smaller download)</option>
+            <option value="Xenova/whisper-small.en">Small (most accurate, bigger download)</option>
+          </select>
+          <small>Runs free on your device. First start downloads the model, then it's saved. Best in Chrome or Edge on a laptop.</small>
+        </div>
+        <div class="field">
+          <label for="vocab">Course vocabulary</label>
+          <textarea id="vocab" placeholder="eigenvalue, Krebs cycle, mitochondria"></textarea>
+          <small>Highlighted in captions, and used by "Fix errors" to spell terms right.</small>
+        </div>
+        <div class="field wide">
+          <label>Microphone check</label>
+          <div class="meter"><div id="meterFill"></div></div>
+          <button id="micCheckBtn" type="button">Check mic level</button>
+          <ul id="devices"></ul>
+          <small>Uses your system's default input. With Read aloud live on, use earbuds, not speakers.</small>
+        </div>
+      </div>
+    </details>
+  </section>
+</div>
 
 <script>
 (() => {
@@ -253,20 +347,112 @@
   const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   const linesEl = $('lines'), interimEl = $('interim'), captionsEl = $('captions');
-  const startBtn = $('startBtn'), replayBtn = $('replayBtn'), downloadBtn = $('downloadBtn'), clearBtn = $('clearBtn');
+  const startBtn = $('startBtn'), replayBtn = $('replayBtn');
   const autoSpeak = $('autoSpeak'), langSel = $('lang'), engineSel = $('engine'), voiceSel = $('voice');
   const rateEl = $('rate'), sizeEl = $('size'), vocabEl = $('vocab'), wModelSel = $('wModel');
 
-  const lines = [];
   let listening = false, wakeLock = null, stickToBottom = true;
 
-  // ---------- Settings saved in the URL (bookmarkable) ----------
+  // ---------- Storage (this browser only) ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (_) { return false; } },
+    del(k) { try { localStorage.removeItem(k); } catch (_) {} }
+  };
+  let storageWarned = false;
+
+  // ---------- Lectures (sessions) ----------
+  // { id, title, created, updated, lines: [{ t, text, orig?, conf, explain? }], summary? }
+  let sessions = store.get('cl_sessions', []);
+  let current = null;
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const defaultTitle = d => 'Lecture, ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+  let saveTimer;
+  function save(now) {
+    clearTimeout(saveTimer);
+    const run = () => {
+      const keep = sessions.filter(s => s.lines.length || s === current || s.title !== s._auto);
+      if (!store.set('cl_sessions', keep) && !storageWarned) {
+        storageWarned = true;
+        showBanner('Couldn’t save to this browser (storage full or blocked). Lectures won’t be kept after you close the page.');
+      }
+    };
+    if (now) run(); else saveTimer = setTimeout(run, 400);
+  }
+  function newSession() {
+    const d = new Date();
+    const s = { id: uid(), title: defaultTitle(d), created: d.toISOString(), updated: d.toISOString(), lines: [] };
+    s._auto = s.title;
+    sessions.unshift(s);
+    return s;
+  }
+  function pruneEmpty(except) {
+    sessions = sessions.filter(s => s.lines.length || s === except || (s._auto && s.title !== s._auto));
+  }
+  function openSession(s) {
+    if (listening && current && s !== current) stopAll();
+    pruneEmpty(s);
+    current = s;
+    selectedIdx = -1;
+    $('sessTitle').value = s.title;
+    renderAll();
+    renderList();
+    closeSidebar();
+    save();
+  }
+  function renderList() {
+    const ul = $('sessList');
+    ul.innerHTML = '';
+    if (!sessions.length) { ul.innerHTML = '<li class="side-empty">No lectures yet.</li>'; return; }
+    sessions.forEach(s => {
+      const li = document.createElement('li');
+      li.className = s === current ? 'active' : '';
+      const d = new Date(s.created);
+      const meta = (s === current && listening) ? '<span class="live">● Live now</span>'
+        : `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${s.lines.length} line${s.lines.length === 1 ? '' : 's'}`;
+      li.innerHTML = `<div class="t">${esc(s.title || 'Untitled lecture')}</div><div class="d">${meta}</div>`;
+      li.onclick = () => openSession(s);
+      ul.appendChild(li);
+    });
+  }
+  $('newBtn').onclick = () => { if (listening) stopAll(); openSession(newSession()); };
+  $('sessTitle').addEventListener('input', () => {
+    current.title = $('sessTitle').value.trim() || 'Untitled lecture';
+    current.updated = new Date().toISOString();
+    renderList(); save();
+  });
+  $('delBtn').onclick = () => {
+    if (!current) return;
+    if (current.lines.length && !confirm(`Delete "${current.title}"? This can't be undone.`)) return;
+    if (listening) stopAll();
+    sessions = sessions.filter(s => s !== current);
+    openSession(sessions[0] || newSession());
+    save(true);
+  };
+  $('dlBtn').onclick = () => {
+    if (!current || !current.lines.length) return;
+    let txt = `${current.title}\n${new Date(current.created).toLocaleString()}\n\n`;
+    if (current.summary) txt += 'SUMMARY\n' + current.summary + '\n\nTRANSCRIPT\n';
+    txt += current.lines.map(l => `[${fmtTime(new Date(l.t))}] ${l.text}`).join('\n') + '\n';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' }));
+    a.download = (current.title || 'lecture').replace(/[^\w\- ,.]+/g, '').trim() + '.txt';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+
+  // Sidebar on phones
+  const closeSidebar = () => document.body.classList.remove('side-open');
+  $('menuBtn').onclick = () => document.body.classList.toggle('side-open');
+  $('scrim').onclick = closeSidebar;
+
+  // ---------- URL settings (bookmarkable) ----------
   const params = new URLSearchParams(location.hash.slice(1));
   const setIf = (sel, v) => { if (v && sel.querySelector(`option[value="${v}"]`)) sel.value = v; };
-  setIf(langSel, params.get('accent'));
-  setIf(engineSel, params.get('engine'));
-  setIf(wModelSel, params.get('model'));
+  setIf(langSel, params.get('accent')); setIf(engineSel, params.get('engine')); setIf(wModelSel, params.get('model'));
   if (params.get('live') === '1') autoSpeak.checked = true;
+  vocabEl.value = store.get('cl_vocab', '');
   function saveHash() {
     const p = new URLSearchParams({ engine: engineSel.value, accent: langSel.value });
     if (engineSel.value === 'whisper') p.set('model', wModelSel.value);
@@ -275,65 +461,282 @@
   }
   function syncEngineUI() {
     $('accentPick').style.display = engineSel.value === 'browser' ? '' : 'none';
-    if (engineSel.value === 'whisper' && isIOS) {
-      showBanner('Heads up: the Accurate engine is heavy and may be slow or crash on iPhone. It works best on a laptop.', true);
-    } else if (engineSel.value === 'browser' && !SR) {
-      showBanner('This browser doesn’t support the Fast engine. Use Chrome, Edge, or Safari, or switch to Accurate.');
-    } else hideBanner();
+    if (engineSel.value === 'whisper' && isIOS) showBanner('Heads up: the Accurate engine is heavy and may be slow on iPhone. It works best on a laptop.', true);
+    else if (engineSel.value === 'browser' && !SR) showBanner('This browser doesn’t support the Fast engine. Use Chrome, Edge, or Safari, or switch to Accurate.');
+    else hideBanner();
   }
   [langSel, engineSel, wModelSel].forEach(s => s.addEventListener('change', () => { saveHash(); syncEngineUI(); }));
-  autoSpeak.addEventListener('change', () => { saveHash(); if (!autoSpeak.checked) clearAutoQueue(); });
+  autoSpeak.addEventListener('change', () => { saveHash(); if (!autoSpeak.checked) autoQueue.length = 0; });
 
   function showBanner(msg, info) { const b = $('banner'); b.innerHTML = msg; b.className = info ? 'info' : ''; b.style.display = 'block'; }
   function hideBanner() { $('banner').style.display = 'none'; }
   if (location.protocol === 'file:') showBanner('Opened as a local file. Microphone access may be blocked. Use the https:// link instead.');
-  syncEngineUI();
 
   function setStatus(text, on) { $('statusText').textContent = text; $('status').classList.toggle('on', !!on); }
 
-  // ---------- Captions ----------
-  const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // ---------- Rendering ----------
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const vocabTerms = () => vocabEl.value.split(/[\n,]/).map(t => t.trim()).filter(Boolean);
   function vocabRegex() {
-    const terms = vocabEl.value.split(/[\n,]/).map(t => t.trim()).filter(Boolean).sort((a, b) => b.length - a.length).map(reEsc);
+    const terms = vocabTerms().sort((a, b) => b.length - a.length).map(reEsc);
     return terms.length ? new RegExp('\\b(' + terms.join('|') + ')\\b', 'gi') : null;
   }
   const renderText = (text, re) => { const s = esc(text); return re ? s.replace(re, '<mark>$1</mark>') : s; };
   const fmtTime = d => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
 
+  // Tiny, safe markdown for AI output: headings, bullets, bold.
+  function md(text) {
+    const out = []; let inList = false;
+    for (const raw of String(text).split('\n')) {
+      const line = raw.trim();
+      const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      if (/^#{1,6}\s/.test(line)) { if (inList) { out.push('</ul>'); inList = false; } out.push('<h4>' + inline(line.replace(/^#+\s*/, '')) + '</h4>'); }
+      else if (/^[-*•]\s+/.test(line)) { if (!inList) { out.push('<ul>'); inList = true; } out.push('<li>' + inline(line.replace(/^[-*•]\s+/, '')) + '</li>'); }
+      else if (line) { if (inList) { out.push('</ul>'); inList = false; } out.push('<p>' + inline(line) + '</p>'); }
+    }
+    if (inList) out.push('</ul>');
+    return out.join('');
+  }
+
+  let selectedIdx = -1;
   function lineEl(entry, idx, re) {
     const div = document.createElement('div');
-    div.className = 'line' + (entry.conf > 0 && entry.conf < 0.6 ? ' low' : '');
-    div.tabIndex = 0; div.dataset.idx = idx; div.title = 'Tap to replay';
-    div.innerHTML = `<time>${fmtTime(entry.time)}</time><span class="txt">${renderText(entry.text, re)}</span><span class="play">▶ Replay</span>`;
+    div.className = 'line' + (entry.conf > 0 && entry.conf < 0.6 ? ' low' : '') + (idx === selectedIdx ? ' selected' : '');
+    div.tabIndex = 0; div.dataset.idx = idx;
+    const fixed = entry.orig ? ` <span class="fixed" title="Original: ${esc(entry.orig)}">AI-fixed</span>` : '';
+    div.innerHTML = `<time>${fmtTime(new Date(entry.t))}${fixed}</time><span class="txt">${renderText(entry.text, re)}</span>`
+      + `<div class="acts"><button data-act="replay">▶ Replay</button><button data-act="explain" class="ai">✨ Explain</button></div>`
+      + (entry.explain ? `<div class="explain">${md(entry.explain)}</div>` : '');
     return div;
   }
-  function rerenderAll() { const re = vocabRegex(); linesEl.innerHTML = ''; lines.forEach((l, i) => linesEl.appendChild(lineEl(l, i, re))); }
+  function renderAll() {
+    const re = vocabRegex();
+    linesEl.innerHTML = '';
+    linesEl.classList.toggle('live', listening);
+    current.lines.forEach((l, i) => linesEl.appendChild(lineEl(l, i, re)));
+    $('empty').style.display = current.lines.length ? 'none' : '';
+    renderSummary();
+    updateButtons();
+  }
+  function rerenderLine(idx) {
+    const old = linesEl.querySelector(`[data-idx="${idx}"]`);
+    if (old) old.replaceWith(lineEl(current.lines[idx], idx, vocabRegex()));
+  }
+  function renderSummary() {
+    const c = $('summaryCard');
+    if (!current.summary) { c.style.display = 'none'; c.innerHTML = ''; return; }
+    c.style.display = '';
+    c.innerHTML = `<div class="card-head"><span>✨ Summary</span><button class="sm ghost" id="hideSum">Hide</button></div>${md(current.summary)}`;
+    $('hideSum').onclick = () => { c.style.display = 'none'; };
+  }
+  function updateButtons() {
+    const has = current && current.lines.length > 0;
+    replayBtn.disabled = !has;
+    ['sumBtn', 'fixBtn', 'dlBtn'].forEach(id => $(id).disabled = !has || aiBusy);
+  }
   function addLine(text, conf) {
     text = (text || '').trim();
-    if (!text) return;
-    const entry = { time: new Date(), text: text.charAt(0).toUpperCase() + text.slice(1), conf: conf || 0 };
-    lines.push(entry);
-    linesEl.appendChild(lineEl(entry, lines.length - 1, vocabRegex()));
+    if (!text || !current) return;
+    const entry = { t: new Date().toISOString(), text: text.charAt(0).toUpperCase() + text.slice(1), conf: conf || 0 };
+    current.lines.push(entry);
+    current.updated = entry.t;
+    const idx = current.lines.length - 1;
+    linesEl.appendChild(lineEl(entry, idx, vocabRegex()));
     $('empty').style.display = 'none';
-    [replayBtn, downloadBtn, clearBtn].forEach(b => b.disabled = false);
-    if (autoSpeak.checked) enqueueAuto(lines.length - 1);
+    updateButtons();
+    if (current.lines.length === 1) renderList();
+    if (autoSpeak.checked) enqueueAuto(idx);
+    save();
     scrollDown();
   }
   function scrollDown() { if (stickToBottom) captionsEl.scrollTop = captionsEl.scrollHeight; }
   captionsEl.addEventListener('scroll', () => { stickToBottom = captionsEl.scrollHeight - captionsEl.scrollTop - captionsEl.clientHeight < 60; });
-  linesEl.addEventListener('click', e => { const el = e.target.closest('.line'); if (el) speakNow(+el.dataset.idx); });
+
+  function selectLine(idx) {
+    const prev = linesEl.querySelector('.line.selected');
+    if (prev) prev.classList.remove('selected');
+    selectedIdx = idx;
+    const el = linesEl.querySelector(`[data-idx="${idx}"]`);
+    if (el) el.classList.add('selected');
+  }
+  linesEl.addEventListener('click', e => {
+    const el = e.target.closest('.line'); if (!el) return;
+    const idx = +el.dataset.idx;
+    const act = e.target.closest('button')?.dataset.act;
+    if (act === 'explain') { explainLine(idx); return; }
+    if (act === 'replay') { speakNow(idx); return; }
+    selectLine(idx); speakNow(idx);
+  });
   linesEl.addEventListener('keydown', e => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('line')) { e.preventDefault(); speakNow(+e.target.dataset.idx); }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('line')) { e.preventDefault(); const i = +e.target.dataset.idx; selectLine(i); speakNow(i); }
   });
 
-  // ---------- Voice: pick the most natural installed voice ----------
+  // ---------- AI (Gemini, student's own free key) ----------
+  const GEM = 'https://generativelanguage.googleapis.com/v1beta';
+  let aiKey = store.get('cl_ai_key', '');
+  let aiModel = store.get('cl_ai_model', 'gemini-flash-latest');
+  let aiBusy = false;
+  function syncAiState() { $('aiState').textContent = aiKey ? 'Connected' : 'Not set up'; $('aiKey').value = aiKey ? '•'.repeat(12) : ''; }
+  $('aiSaveBtn').onclick = async () => {
+    const v = $('aiKey').value.trim();
+    if (!v || /^•+$/.test(v)) return;
+    aiKey = v; store.set('cl_ai_key', v); syncAiState();
+    $('aiState').textContent = 'Checking…';
+    try { await gemini('Reply with the single word: ok'); $('aiState').textContent = 'Connected ✓'; hideBanner(); }
+    catch (e) { $('aiState').textContent = 'Problem: ' + e.message; }
+  };
+  $('aiRemoveBtn').onclick = () => { aiKey = ''; store.del('cl_ai_key'); syncAiState(); };
+  $('aiKey').addEventListener('focus', () => { if (/^•+$/.test($('aiKey').value)) $('aiKey').value = ''; });
+
+  function needKey() {
+    $('settingsPanel').open = true;
+    showBanner('To use AI, paste a free Gemini key in Settings below. It takes about a minute: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get a key</a>.', true);
+    setTimeout(() => $('aiKey').focus(), 50);
+  }
+  async function pickModel() {
+    // If the default model name stops working, find a current free "flash" model.
+    const res = await fetch(`${GEM}/models?pageSize=200`, { headers: { 'x-goog-api-key': aiKey } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const ok = (data.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+      .map(m => m.name.replace(/^models\//, ''))
+      .filter(n => /flash/i.test(n) && !/image|tts|audio|live|vision|thinking|exp/i.test(n));
+    ok.sort((a, b) => (/preview/.test(a) - /preview/.test(b)) || (/lite/.test(a) - /lite/.test(b)) || b.localeCompare(a, undefined, { numeric: true }));
+    return ok[0] || null;
+  }
+  async function gemini(prompt, { json = false } = {}, retried = false) {
+    if (!aiKey) throw new Error('NO_KEY');
+    const body = {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: json ? { temperature: 0.2, responseMimeType: 'application/json' } : { temperature: 0.4 }
+    };
+    let res;
+    try {
+      res = await fetch(`${GEM}/models/${encodeURIComponent(aiModel)}:generateContent`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': aiKey }, body: JSON.stringify(body)
+      });
+    } catch (e) { throw new Error('Couldn’t reach Google. Check your internet connection.'); }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const msg = err.error?.message || res.statusText;
+      if ((res.status === 404 || /not found|not supported/i.test(msg)) && !retried) {
+        const m = await pickModel();
+        if (m && m !== aiModel) { aiModel = m; store.set('cl_ai_model', m); return gemini(prompt, { json }, true); }
+      }
+      if (res.status === 429) throw new Error('Free AI limit reached for now. Try again in a minute, or tomorrow if it keeps happening.');
+      if (res.status === 400 && /api key/i.test(msg)) throw new Error('That key didn’t work. Double-check it in Settings.');
+      if (res.status === 403) throw new Error('Google rejected the key (' + msg + ').');
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    const text = (data.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
+    if (!text) throw new Error('The AI returned an empty answer. Try again.');
+    return text;
+  }
+  async function runAi(btn, label, fn) {
+    if (!aiKey) return needKey();
+    if (aiBusy) return;
+    aiBusy = true; updateButtons();
+    const orig = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = label;
+    try { await fn(); }
+    catch (e) { if (e.message === 'NO_KEY') needKey(); else showBanner('AI: ' + esc(e.message)); }
+    finally { aiBusy = false; if (btn) btn.innerHTML = orig; updateButtons(); }
+  }
+  const vocabNote = () => { const v = vocabTerms(); return v.length ? `Course vocabulary (spell these exactly): ${v.join(', ')}.` : ''; };
+  const transcriptText = (maxChars = 120000) => {
+    let t = current.lines.map(l => l.text).join('\n');
+    return t.length > maxChars ? t.slice(-maxChars) : t;
+  };
+
+  $('sumBtn').onclick = () => runAi($('sumBtn'), 'Summarizing…', async () => {
+    const prompt = `You are helping a college student who had trouble understanding a lecture (the professor may have a strong accent). Below is an automatic transcript. It may contain misheard words; use context to infer what was meant.
+
+Write short study notes in plain English using exactly these markdown sections:
+## Main ideas
+(3-6 bullets)
+## Key terms
+(bullets: **term**: short definition)
+## Assignments, deadlines, or exam hints
+(bullets, or "None mentioned")
+## Worth asking the professor
+(1-3 bullets about parts that were unclear)
+
+Be concise. Don't invent facts that aren't supported by the transcript.
+${vocabNote()}
+
+TRANSCRIPT:
+${transcriptText()}`;
+    current.summary = await gemini(prompt);
+    save(); renderSummary();
+    captionsEl.scrollTop = 0;
+  });
+
+  $('fixBtn').onclick = () => runAi($('fixBtn'), 'Fixing…', async () => {
+    const BATCH = 120;
+    let changed = 0;
+    for (let start = 0; start < current.lines.length; start += BATCH) {
+      const slice = current.lines.slice(start, start + BATCH);
+      if (current.lines.length > BATCH) $('fixBtn').innerHTML = `Fixing ${Math.min(start + BATCH, current.lines.length)}/${current.lines.length}…`;
+      const input = slice.map(l => l.orig || l.text);
+      const prompt = `You are correcting an automatic speech-to-text transcript of a university lecture. The professor may have a strong accent, so some words were misheard.
+
+Fix misheard words, spelling, capitalization, and punctuation using context and the course vocabulary. Rules:
+- Do NOT add, remove, summarize, or reorder content.
+- Do NOT merge or split lines. Return exactly ${input.length} strings, in the same order.
+- If a line is already fine, return it unchanged.
+${vocabNote()}
+
+Return only a JSON array of strings.
+
+INPUT:
+${JSON.stringify(input)}`;
+      const raw = await gemini(prompt, { json: true });
+      let arr;
+      try { arr = JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g, '')); } catch (_) { throw new Error('The AI reply wasn’t in the expected format. Try again.'); }
+      if (!Array.isArray(arr) || arr.length !== input.length) throw new Error('The AI changed the number of lines, so nothing was replaced. Try again.');
+      arr.forEach((txt, i) => {
+        const l = slice[i];
+        const base = l.orig || l.text;
+        txt = String(txt || '').trim();
+        if (txt && txt !== base) { if (!l.orig) l.orig = base; l.text = txt; changed++; }
+        else if (txt === base && l.orig) { l.text = base; delete l.orig; }
+      });
+    }
+    save(true); renderAll();
+    showBanner(changed ? `AI fixed ${changed} line${changed === 1 ? '' : 's'}. Fixed lines are marked "AI-fixed"; hover the tag to see the original.` : 'AI didn’t find anything to fix.', true);
+  });
+
+  function explainLine(idx) {
+    const btn = linesEl.querySelector(`[data-idx="${idx}"] [data-act="explain"]`);
+    runAi(btn, 'Explaining…', async () => {
+      const before = current.lines.slice(Math.max(0, idx - 12), idx).map(l => l.text).join('\n');
+      const after = current.lines.slice(idx + 1, idx + 3).map(l => l.text).join('\n');
+      const prompt = `A college student is in a lecture and didn't understand one line. The professor may have a strong accent, and the text comes from automatic transcription, so it may contain misheard words.
+
+Earlier in the lecture:
+${before || '(nothing yet)'}
+
+THE LINE: "${current.lines[idx].text}"
+
+Right after:
+${after || '(nothing yet)'}
+${vocabNote()}
+
+In 2-4 short, plain-English sentences, explain what the professor most likely meant. If the line looks misheard, start with what was probably said. No preamble.`;
+      current.lines[idx].explain = await gemini(prompt);
+      save(); rerenderLine(idx); selectLine(idx);
+    });
+  }
+
+  // ---------- Voice ----------
   const NOVELTY = /albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|junior|ralph|fred|kathy|grandma|grandpa|rocko|shelley|eddy|flo|reed|sandy/i;
   function voiceScore(v) {
     let s = 0; const n = v.name;
     if (/premium/i.test(n)) s += 8;
     if (/enhanced/i.test(n)) s += 6;
-    if (/natural|neural|online/i.test(n)) s += 7;   // Edge "Online (Natural)" voices
+    if (/natural|neural|online/i.test(n)) s += 7;
     if (/siri/i.test(n)) s += 5;
     if (/google/i.test(n)) s += 4;
     if (/samantha|ava|zoe|evan|nathan|allison|susan|tom|karen|daniel|serena|moira|rishi|aria|jenny|guy/i.test(n)) s += 1;
@@ -343,66 +746,49 @@
   let voices = [];
   function loadVoices() {
     if (!synth) return;
-    const prevName = voices[+voiceSel.value]?.name;
-    voices = synth.getVoices()
-      .filter(v => v.lang && /^en/i.test(v.lang) && !NOVELTY.test(v.name))
+    const prevName = voices[+voiceSel.value]?.name || store.get('cl_voice', '');
+    voices = synth.getVoices().filter(v => v.lang && /^en/i.test(v.lang) && !NOVELTY.test(v.name))
       .sort((a, b) => voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name));
     voiceSel.innerHTML = '';
-    voices.forEach((v, i) => {
-      const o = document.createElement('option');
-      o.value = i; o.textContent = (i === 0 ? '★ ' : '') + `${v.name} (${v.lang})`;
-      voiceSel.appendChild(o);
-    });
+    voices.forEach((v, i) => { const o = document.createElement('option'); o.value = i; o.textContent = (i === 0 ? '★ ' : '') + `${v.name} (${v.lang})`; voiceSel.appendChild(o); });
     if (!voices.length) voiceSel.innerHTML = '<option value="">System default</option>';
     const keep = voices.findIndex(v => v.name === prevName);
     voiceSel.value = keep >= 0 ? keep : 0;
   }
   if (synth) { loadVoices(); synth.onvoiceschanged = loadVoices; }
+  voiceSel.addEventListener('change', () => store.set('cl_voice', voices[+voiceSel.value]?.name || ''));
+  const savedRate = store.get('cl_rate', null);
+  if (savedRate) rateEl.value = savedRate;
 
-  // Add end punctuation so the voice drops its pitch at the end instead of running on.
   const forSpeech = t => /[.!?]$/.test(t) ? t : t + '.';
-
   let sayToken = 0, saying = false;
   const autoQueue = [];
   function utter(idx, done) {
     const myToken = ++sayToken;
-    const u = new SpeechSynthesisUtterance(forSpeech(lines[idx].text));
+    const text = current.lines[idx].text;
+    const u = new SpeechSynthesisUtterance(forSpeech(text));
     const v = voices[+voiceSel.value]; if (v) { u.voice = v; u.lang = v.lang; }
     u.rate = +rateEl.value; u.pitch = 1;
-    const el = linesEl.querySelector(`[data-idx="${idx}"]`);
-    const words = lines[idx].text.split(/\s+/).length;
+    const el = () => linesEl.querySelector(`[data-idx="${idx}"]`);
     let finished = false;
-    const finish = () => {
-      if (finished) return; finished = true;
-      el && el.classList.remove('speaking');
-      if (myToken === sayToken) done && done();
-    };
-    // Safety net: some browsers never fire onend.
-    const guard = setTimeout(finish, (words / (2.6 * u.rate)) * 1000 + 4000);
-    u.onstart = () => el && el.classList.add('speaking');
+    const finish = () => { if (finished) return; finished = true; el()?.classList.remove('speaking'); if (myToken === sayToken) done && done(); };
+    const guard = setTimeout(finish, (text.split(/\s+/).length / (2.6 * u.rate)) * 1000 + 4000);
+    u.onstart = () => el()?.classList.add('speaking');
     u.onend = u.onerror = () => { clearTimeout(guard); finish(); };
     synth.speak(u);
   }
   function speakNow(idx) {
-    if (!synth || !lines[idx]) return;
+    if (!synth || !current.lines[idx]) return;
     autoQueue.length = 0; sayToken++; synth.cancel();
-    saying = true;
-    utter(idx, () => { saying = false; pump(); });
+    saying = true; utter(idx, () => { saying = false; pump(); });
   }
-  // Read aloud live: if it falls behind, skip to the newest line so it never lags far behind.
-  function enqueueAuto(idx) {
-    autoQueue.push(idx);
-    if (autoQueue.length > 1) autoQueue.splice(0, autoQueue.length - 1);
-    pump();
-  }
+  function enqueueAuto(idx) { autoQueue.push(idx); if (autoQueue.length > 1) autoQueue.splice(0, autoQueue.length - 1); pump(); }
   function pump() {
     if (saying || !autoQueue.length || !synth) return;
-    const idx = autoQueue.shift();
-    saying = true;
+    const idx = autoQueue.shift(); saying = true;
     utter(idx, () => { saying = false; pump(); });
   }
-  function clearAutoQueue() { autoQueue.length = 0; }
-  replayBtn.onclick = () => speakNow(lines.length - 1);
+  replayBtn.onclick = () => speakNow(current.lines.length - 1);
   $('testVoiceBtn').onclick = () => {
     if (!synth) return;
     sayToken++; synth.cancel(); saying = false;
@@ -427,21 +813,17 @@
       interimEl.textContent = interim; scrollDown();
     };
     rec.onerror = e => {
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        stopAll(); showBanner('Microphone access was blocked. Allow the mic for this site in your browser settings, then press Start again.');
-      } else if (e.error === 'network') setStatus('Reconnecting…', false);
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { stopAll(); showBanner('Microphone access was blocked. Allow the mic for this site in your browser settings, then press Start again.'); }
+      else if (e.error === 'network') setStatus('Reconnecting…', false);
       else if (e.error !== 'no-speech' && e.error !== 'aborted') setStatus('Error: ' + e.error, false);
     };
-    rec.onend = () => {
-      interimEl.textContent = '';
-      if (listening && engineSel.value === 'browser') setTimeout(() => { try { rec.start(); } catch (_) {} }, 300);
-    };
+    rec.onend = () => { interimEl.textContent = ''; if (listening && engineSel.value === 'browser') setTimeout(() => { try { rec.start(); } catch (_) {} }, 300); };
     rec.start();
     return true;
   }
   function stopBrowser() { try { rec && rec.stop(); } catch (_) {} rec = null; }
 
-  // ---------- Engine 2: Whisper running on-device (Accurate) ----------
+  // ---------- Engine 2: Whisper on-device (Accurate) ----------
   const TJS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2';
   let asr = null, asrModel = null;
   async function loadWhisper() {
@@ -467,12 +849,10 @@
     asr = pipe; asrModel = model;
     return asr;
   }
-
   let wStream = null, wCtx = null, wNode = null, wSrc = null;
   let wBuf = [], wLen = 0, silentMs = 0, voiced = false, noiseFloor = 0.004;
   const pending = []; let busy = false;
   const SR16 = 16000;
-
   function downsample(input, from) {
     if (from === SR16) return new Float32Array(input);
     const ratio = from / SR16, len = Math.floor(input.length / ratio), out = new Float32Array(len);
@@ -483,29 +863,19 @@
     }
     return out;
   }
-  function concat(parts) {
-    const total = parts.reduce((n, p) => n + p.length, 0), out = new Float32Array(total);
-    let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
-    return out;
-  }
+  function concat(parts) { const total = parts.reduce((n, p) => n + p.length, 0), out = new Float32Array(total); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out; }
   function flush() {
     if (!wLen) return;
     const audio = concat(wBuf); wBuf = []; wLen = 0; silentMs = 0;
     if (voiced) pending.push(audio);
-    voiced = false;
-    processPending();
+    voiced = false; processPending();
   }
-  // Whisper sometimes invents text on near-silence. Filter the usual suspects.
   const JUNK = /^(thank you\.?|thanks for watching!?|you\.?|bye\.?|\.+|okay\.?)$/i;
-  function cleanText(t) {
-    t = (t || '').replace(/\[[^\]]*\]|\([^)]*\)|\*[^*]*\*/g, ' ').replace(/\s+/g, ' ').trim();
-    return JUNK.test(t) ? '' : t;
-  }
+  function cleanText(t) { t = (t || '').replace(/\[[^\]]*\]|\([^)]*\)|\*[^*]*\*/g, ' ').replace(/\s+/g, ' ').trim(); return JUNK.test(t) ? '' : t; }
   async function processPending() {
     if (busy || !asr) return;
     busy = true;
     while (pending.length) {
-      // If we fell behind, merge the backlog but keep at most the last 30 seconds.
       let audio = pending.length > 1 ? concat(pending.splice(0)) : pending.shift();
       if (audio.length > SR16 * 30) audio = audio.slice(audio.length - SR16 * 30);
       interimEl.textContent = 'Transcribing…';
@@ -519,21 +889,12 @@
     busy = false;
     if (listening) setStatus('Listening', true);
   }
-
   async function startWhisper() {
     try { await loadWhisper(); }
-    catch (e) {
-      console.error(e);
-      showBanner('Couldn’t load the Accurate engine (' + esc(e.message || String(e)) + '). Try Chrome on a laptop, or switch to Fast.');
-      return false;
-    }
-    if (!listening) return false; // user pressed Stop while loading
-    try {
-      wStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-    } catch (e) {
-      showBanner('Microphone access was blocked. Allow the mic for this site in your browser settings, then press Start again.');
-      return false;
-    }
+    catch (e) { console.error(e); showBanner('Couldn’t load the Accurate engine (' + esc(e.message || String(e)) + '). Try Chrome on a laptop, or switch to Fast.'); return false; }
+    if (!listening) return false;
+    try { wStream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
+    catch (e) { showBanner('Microphone access was blocked. Allow the mic for this site in your browser settings, then press Start again.'); return false; }
     wCtx = new (window.AudioContext || window.webkitAudioContext)();
     const rate = wCtx.sampleRate;
     wSrc = wCtx.createMediaStreamSource(wStream);
@@ -543,10 +904,9 @@
       const input = e.inputBuffer.getChannelData(0);
       e.outputBuffer.getChannelData(0).fill(0);
       let sq = 0; for (let i = 0; i < input.length; i++) sq += input[i] * input[i];
-      const rms = Math.sqrt(sq / input.length);
-      const ms = input.length / rate * 1000;
+      const rms = Math.sqrt(sq / input.length), ms = input.length / rate * 1000;
       const isSpeech = rms > Math.max(0.006, noiseFloor * 2.5);
-      if (!isSpeech) noiseFloor = noiseFloor * 0.95 + rms * 0.05; // adapt to room noise
+      if (!isSpeech) noiseFloor = noiseFloor * 0.95 + rms * 0.05;
       const chunk = downsample(input, rate);
       wBuf.push(chunk); wLen += chunk.length;
       if (isSpeech) { voiced = true; silentMs = 0; } else silentMs += ms;
@@ -575,44 +935,33 @@
     startBtn.textContent = listening ? 'Stop' : 'Start';
     startBtn.classList.toggle('stop', listening);
     [langSel, engineSel, wModelSel].forEach(s => s.disabled = listening);
+    linesEl.classList.toggle('live', listening);
   }
   function stopAll() {
     listening = false;
     stopBrowser(); stopWhisper();
     if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
     setStatus('Not listening', false);
-    updateStartBtn();
+    updateStartBtn(); renderList(); save(true);
   }
   startBtn.onclick = async () => {
     if (listening) return stopAll();
     stopMeter(); hideBanner();
-    listening = true; updateStartBtn();
+    listening = true; updateStartBtn(); renderList();
+    stickToBottom = true; scrollDown();
     const ok = engineSel.value === 'whisper' ? await startWhisper() : startBrowser();
     if (!ok) stopAll(); else requestWakeLock();
   };
-
-  // ---------- Transcript ----------
-  downloadBtn.onclick = () => {
-    const d = new Date();
-    const body = lines.map(l => `[${fmtTime(l.time)}] ${l.text}`).join('\n');
-    const blob = new Blob([`Lecture transcript, ${d.toLocaleDateString()}\n\n${body}\n`], { type: 'text/plain' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = `lecture-${d.toISOString().slice(0, 10)}.txt`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  };
-  clearBtn.onclick = () => {
-    if (!confirm('Clear all captions? Download first if you want to keep them.')) return;
-    lines.length = 0; linesEl.innerHTML = ''; $('empty').style.display = '';
-    autoQueue.length = 0;
-    [replayBtn, downloadBtn, clearBtn].forEach(b => b.disabled = true);
-  };
+  window.addEventListener('beforeunload', () => save(true));
 
   // ---------- Settings ----------
-  rateEl.oninput = () => $('rateVal').textContent = (+rateEl.value).toFixed(2).replace(/0$/, '') + '×';
-  sizeEl.oninput = () => { document.documentElement.style.setProperty('--cap-size', sizeEl.value + 'px'); $('sizeVal').textContent = sizeEl.value + 'px'; };
+  rateEl.oninput = () => { $('rateVal').textContent = (+rateEl.value).toFixed(2).replace(/0$/, '') + '×'; store.set('cl_rate', rateEl.value); };
+  sizeEl.oninput = () => { document.documentElement.style.setProperty('--cap-size', sizeEl.value + 'px'); $('sizeVal').textContent = sizeEl.value + 'px'; store.set('cl_size', sizeEl.value); };
+  const savedSize = store.get('cl_size', null);
+  if (savedSize) { sizeEl.value = savedSize; sizeEl.oninput(); }
+  rateEl.oninput();
   let vocabTimer;
-  vocabEl.oninput = () => { clearTimeout(vocabTimer); vocabTimer = setTimeout(rerenderAll, 250); };
+  vocabEl.oninput = () => { clearTimeout(vocabTimer); vocabTimer = setTimeout(() => { store.set('cl_vocab', vocabEl.value); renderAll(); }, 300); };
 
   // ---------- Mic check ----------
   let meterStream = null, meterCtx = null, meterRaf = null;
@@ -633,43 +982,20 @@
       const an = meterCtx.createAnalyser(); an.fftSize = 1024;
       meterCtx.createMediaStreamSource(meterStream).connect(an);
       const buf = new Float32Array(an.fftSize);
-      const tick = () => {
-        an.getFloatTimeDomainData(buf);
-        let sum = 0; for (const x of buf) sum += x * x;
-        $('meterFill').style.width = Math.min(100, Math.sqrt(sum / buf.length) * 400) + '%';
-        meterRaf = requestAnimationFrame(tick);
-      };
+      const tick = () => { an.getFloatTimeDomainData(buf); let sum = 0; for (const x of buf) sum += x * x; $('meterFill').style.width = Math.min(100, Math.sqrt(sum / buf.length) * 400) + '%'; meterRaf = requestAnimationFrame(tick); };
       tick();
       $('micCheckBtn').textContent = 'Stop mic check';
       const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput');
       const active = meterStream.getAudioTracks()[0]?.label;
       $('devices').innerHTML = devs.map(d => `<li>${esc(d.label || 'Microphone')}${d.label === active ? ' ← in use' : ''}</li>`).join('');
-    } catch (err) {
-      stopMeter(); showBanner('Couldn’t open the microphone: ' + esc(err.message || String(err)));
-    }
+    } catch (err) { stopMeter(); showBanner('Couldn’t open the microphone: ' + esc(err.message || String(err))); }
   };
-})();
-</script>
 
-<!-- Usage tracking: same private visit log as andrewmish12.github.io (page shows as "ClearLecture (app)") -->
-<script>
-(function(){
-var EP='https://script.google.com/macros/s/AKfycbxcPo8eeXoKq7z_eFuxh8H2ztD0Uw-StdVecJKjhIJnc-S9vvM1ctE3_5L66Tela_tbvw/exec';
-var q=new URLSearchParams(location.search),ref=q.get('ref')||'';
-try{if(ref)sessionStorage.setItem('am_ref',ref);else ref=sessionStorage.getItem('am_ref')||'';}catch(e){}
-var vid='';try{vid=localStorage.getItem('am_vid');if(!vid){vid=Math.random().toString(36).slice(2,10);localStorage.setItem('am_vid',vid)}}catch(e){}
-var me=false;try{if(ref==='andrew'||q.get('me')==='1'){localStorage.setItem('am_skip','1');try{navigator.sendBeacon(EP,JSON.stringify({event:'me',vid:vid}))}catch(e){}}me=localStorage.getItem('am_skip')==='1'}catch(e){}
-if(me)return;
-var sid='';try{sid=sessionStorage.getItem('am_sid');if(!sid){sid=Math.random().toString(36).slice(2,10);sessionStorage.setItem('am_sid',sid)}}catch(e){}
-var t0=Date.now(),b={page:'/clearlecture-app',ref:ref,referrer:document.referrer,ua:navigator.userAgent,vid:vid,sid:sid,pid:Math.random().toString(36).slice(2,12)};
-function send(o){var d=JSON.stringify(Object.assign({},b,o));try{if(navigator.sendBeacon&&navigator.sendBeacon(EP,d))return}catch(e){}try{fetch(EP,{method:'POST',mode:'no-cors',body:d,keepalive:true})}catch(e){}}
-function tryGeo(list){if(!list.length)return Promise.resolve();var s=list[0];var c=new AbortController();var t=setTimeout(function(){c.abort()},2500);
-return fetch(s.u,{signal:c.signal}).then(function(r){return r.json()}).then(function(g){clearTimeout(t);var m=s.f(g);if(!m.ip)throw 0;Object.assign(b,m)}).catch(function(){clearTimeout(t);return tryGeo(list.slice(1))})}
-var geo=[{u:'https://ipwho.is/',f:function(g){return{ip:g.ip,city:g.city,region:g.region,country:g.country,org:(g.connection&&(g.connection.org||g.connection.isp))||''}}},
-{u:'https://ipapi.co/json/',f:function(g){return{ip:g.ip,city:g.city,region:g.region,country:g.country_name,org:g.org||''}}},
-{u:'https://get.geojs.io/v1/ip/geo.json',f:function(g){return{ip:g.ip,city:g.city,region:g.region,country:g.country,org:g.organization_name||''}}}];
-tryGeo(geo).then(function(){send({event:'view'})});
-var done=false;document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&!done){done=true;send({event:'leave',seconds:Math.round((Date.now()-t0)/1000)})}});
+  // ---------- Boot ----------
+  sessions.forEach(s => { if (!Array.isArray(s.lines)) s.lines = []; });
+  syncAiState();
+  syncEngineUI();
+  openSession(sessions.find(s => !s.lines.length) || newSession());
 })();
 </script>
 </body>
