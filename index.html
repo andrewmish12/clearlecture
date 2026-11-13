@@ -619,7 +619,10 @@
   // ---------- AI (Gemini, student's own free key) ----------
   const GEM = 'https://generativelanguage.googleapis.com/v1beta';
   let aiKey = store.get('cl_ai_key', '');
-  let aiModel = store.get('cl_ai_model', 'gemini-flash-latest');
+  // Flash-Lite: same model AU Grades uses successfully on the free tier; less crowded than full Flash.
+  const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
+  let aiModel = store.get('cl_ai_model_v2', DEFAULT_MODEL);
+  store.del('cl_ai_model'); // drop the old saved default ("gemini-flash-latest")
   let aiBusy = false;
   function syncAiState() { $('aiState').textContent = aiKey ? 'Connected' : 'Not set up'; $('aiKey').value = aiKey ? '•'.repeat(12) : ''; }
   $('aiSaveBtn').onclick = async () => {
@@ -654,7 +657,8 @@
       const ok = (data.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
         .map(m => m.name.replace(/^models\//, ''))
         .filter(n => /flash/i.test(n) && !/image|tts|audio|live|vision|thinking|exp|embed/i.test(n));
-      ok.sort((a, b) => (/preview/.test(a) - /preview/.test(b)) || (/lite/.test(a) - /lite/.test(b)) || b.localeCompare(a, undefined, { numeric: true }));
+      // Prefer stable over preview, Lite over full Flash (Lite is less overloaded on the free tier), newest first.
+      ok.sort((a, b) => (/preview/.test(a) - /preview/.test(b)) || (/lite/.test(b) - /lite/.test(a)) || b.localeCompare(a, undefined, { numeric: true }));
       modelList = ok;
       return ok;
     } catch (_) { return []; }
@@ -694,7 +698,7 @@
       generationConfig: json ? { temperature: 0.2, responseMimeType: 'application/json' } : { temperature: 0.4 }
     };
     const tried = new Set();
-    let candidates = [aiModel];
+    let candidates = aiModel === DEFAULT_MODEL ? [aiModel] : [aiModel, DEFAULT_MODEL];
     let lastErr = null;
     for (let round = 0; round < 2; round++) {
       for (const model of candidates) {
@@ -705,7 +709,7 @@
           if (w) { onWait && onWait(); await sleep(w); }
           try {
             const text = await callModel(model, body);
-            if (model !== aiModel) { aiModel = model; store.set('cl_ai_model', model); }
+            if (model !== aiModel) { aiModel = model; store.set('cl_ai_model_v2', model); }
             return text;
           } catch (e) {
             lastErr = e;
@@ -717,9 +721,10 @@
       // Busy, missing, or out of quota on this model: try other Flash models on the key.
       const others = (await listModels()).filter(m => !tried.has(m));
       if (!others.length) break;
-      candidates = others.slice(0, 4);
+      candidates = others.slice(0, 6);
     }
-    if (lastErr && lastErr.kind === 'busy') throw new Error('Google’s free AI is very busy right now. Wait a minute and try again.');
+    console.warn('Gemini failed. Models tried:', [...tried], lastErr);
+    if (lastErr && lastErr.kind === 'busy') throw new Error(`Google said every model it tried was busy (${[...tried].join(', ')}). Google's message: "${lastErr.message}"`);
     throw lastErr || new Error('AI request failed.');
   }
   async function runAi(btn, label, fn) {
@@ -796,7 +801,7 @@ ${JSON.stringify(input)}`;
   }
 
   $('fixBtn').onclick = () => runAi($('fixBtn'), 'Fixing…', async () => {
-    const BATCH = 120, sess = current, total = sess.lines.length;
+    const BATCH = 80, sess = current, total = sess.lines.length;
     let changed = 0;
     for (let start = 0; start < total; start += BATCH) {
       if (total > BATCH) $('fixBtn').innerHTML = `Fixing ${Math.min(start + BATCH, total)}/${total}…`;
